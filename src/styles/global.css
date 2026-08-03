@@ -1,0 +1,69 @@
+/*
+ * DPM global styles — reset, ฟอนต์, พื้นฐานของทุกหน้า
+ */
+@import './tokens.css';
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  min-height: 100vh;
+}
+
+body {
+  background: var(--dpm-bg);
+  color: var(--dpm-ink);
+  font-family: var(--dpm-font);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  /* ตัวเลขต้องเรียงตรงคอลัมน์ทุกที่ — ตั้งครั้งเดียวที่ body */
+  font-variant-numeric: tabular-nums;
+}
+
+a {
+  color: var(--dpm-accent);
+  text-decoration: none;
+}
+a:hover {
+  color: var(--dpm-ink);
+}
+
+h1,
+h2,
+h3,
+h4,
+p {
+  margin: 0;
+}
+
+button {
+  font-family: inherit;
+}
+
+/* animation ที่อนุญาตให้ใช้มีสองตัวนี้เท่านั้น (+ transition ตามสเปก) */
+@keyframes dpmSkeleton {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes dpmBreathe {
+  0%,
+  100% {
+    opacity: 0.25;
+  }
+  50% {
+    opacity: 1;
+  }
+}

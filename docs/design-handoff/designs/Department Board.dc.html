@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  body { margin:0; background:#FAFAF8; font-family:'IBM Plex Sans Thai', sans-serif; color:#1C1C1A; -webkit-font-smoothing:antialiased; font-variant-numeric:tabular-nums; }
+  a { color:#2B4C7E; text-decoration:none; }
+  a:hover { color:#1C1C1A; }
+</style>
+</helmet>
+<div style="min-height:100vh; background:#FAFAF8;">
+
+  <div style="position:sticky; top:0; z-index:30; background:#FAFAF8; border-bottom:1px solid #E3E2DD;">
+    <div style="max-width:1440px; margin:0 auto; padding:14px 32px; display:flex; align-items:center; gap:20px;">
+      <span style="font-size:16px; color:#6B6B66; cursor:pointer; padding:4px 8px; border-radius:4px;" style-hover="background:#F2F1ED; color:#1C1C1A;">←</span>
+      <div>
+        <h1 style="margin:0; font-size:20px; font-weight:600; letter-spacing:-0.01em;">แผนก Interior Design</h1>
+        <div style="margin-top:3px; font-size:12px; color:#6B6B66;">3 Squad · 16 คน · 6 โครงการ Active · หัวหน้าแผนก คุณกิตติ</div>
+      </div>
+      <div style="flex:1;"></div>
+      <div style="display:flex; align-items:center; gap:8px; border:1px solid #E3E2DD; border-radius:4px; background:#FFFFFF; padding:4px 4px 4px 12px;">
+        <span style="font-size:13px; font-weight:500;">สัปดาห์ 32</span>
+        <span style="font-size:12px; color:#6B6B66;">4–8 ส.ค. 2569</span>
+        <span style="width:24px; text-align:center; font-size:13px; color:#6B6B66; cursor:pointer; border-radius:3px;" style-hover="background:#F2F1ED; color:#1C1C1A;">‹</span>
+        <span style="width:24px; text-align:center; font-size:13px; color:#6B6B66; cursor:pointer; border-radius:3px;" style-hover="background:#F2F1ED; color:#1C1C1A;">›</span>
+      </div>
+      <span style="font-size:12px; color:#6B6B66; border:1px solid #E3E2DD; background:#FFFFFF; border-radius:4px; padding:7px 14px; cursor:pointer;" style-hover="border-color:#1C1C1A; color:#1C1C1A;">รายงานแผนก</span>
+    </div>
+  </div>
+
+  <div style="max-width:1440px; margin:0 auto; padding:20px 32px 80px; display:grid; grid-template-columns:minmax(0,1.42fr) minmax(360px,1fr); gap:24px; align-items:start;">
+
+    <div style="min-width:0; display:flex; flex-direction:column; gap:12px;">
+      <div style="display:flex; align-items:baseline; justify-content:space-between;">
+        <div style="display:flex; align-items:baseline; gap:10px;">
+          <h2 style="margin:0; font-size:16px; font-weight:600;">รอฉันรีวิว</h2>
+          <span style="font-size:12px; font-weight:600; color:#FAFAF8; background:#B33A3A; border-radius:4px; padding:2px 7px;">{{ reviewCount }}</span>
+          <span style="font-size:12px; color:#9A9A94;">เรียงตามรอนานที่สุด</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:10px; font-size:11px; color:#6B6B66;">
+          <sc-for list="{{ kindLegend }}" as="k" hint-placeholder-count="4">
+            <span style="display:inline-flex; align-items:center; gap:5px;">
+              <span style="width:16px; height:16px; border-radius:3px; display:inline-flex; align-items:center; justify-content:center; font-size:9px; background:{{ k.boxBg }}; border:1px {{ k.boxStyle }} {{ k.boxBorder }}; color:{{ k.glyphColor }};">{{ k.glyph }}</span>{{ k.label }}
+            </span>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="border:1px solid #E3E2DD; border-radius:6px; background:#FFFFFF; overflow:hidden;">
+        <sc-for list="{{ reviews }}" as="r" hint-placeholder-count="5">
+          <div style="display:grid; grid-template-columns:6px 148px minmax(0,1fr) 128px 116px; align-items:stretch; border-bottom:1px solid #E3E2DD;" style-hover="background:#FAFAF8;">
+            <div style="background:{{ r.railColor }};"></div>
+
+            <div style="padding:14px 12px 14px 14px; border-right:1px solid #E3E2DD;">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span style="width:26px; height:26px; border-radius:3px; display:inline-flex; align-items:center; justify-content:center; font-size:13px; background:{{ r.boxBg }}; border:1px {{ r.boxStyle }} {{ r.boxBorder }}; color:{{ r.glyphColor }};">{{ r.glyph }}</span>
+                <span style="font-size:12px; font-weight:600;">{{ r.kindLabel }}</span>
+              </div>
+              <div style="margin-top:6px; font-size:11px; color:#9A9A94; line-height:1.45;">{{ r.kindHint }}</div>
+            </div>
+
+            <div style="padding:14px 16px; min-width:0;">
+              <div style="display:flex; align-items:baseline; gap:10px; flex-wrap:wrap;">
+                <span style="font-family:'IBM Plex Mono', monospace; font-size:12px; color:#6B6B66;">{{ r.code }}</span>
+                <span style="font-size:15px; font-weight:600;">{{ r.title }}</span>
+              </div>
+              <div style="margin-top:5px; font-size:13px; color:#1C1C1A; line-height:1.55;">{{ r.detail }}</div>
+              <div style="margin-top:5px; font-size:12px; color:#6B6B66; line-height:1.55;">{{ r.sub }}</div>
+            </div>
+
+            <div style="padding:14px 12px; text-align:right;">
+              <div style="display:flex; align-items:baseline; justify-content:flex-end; gap:6px;">
+                <span style="font-size:9px; color:{{ r.waitColor }};">{{ r.waitMark }}</span>
+                <span style="font-size:22px; font-weight:600; color:{{ r.waitColor }}; line-height:1;">{{ r.waitDays }}</span>
+                <span style="font-size:12px; color:{{ r.waitColor }};">วัน</span>
+              </div>
+              <div style="margin-top:4px; font-size:11px; color:#9A9A94;">{{ r.waitNote }}</div>
+            </div>
+
+            <div style="padding:14px 14px 14px 0; display:flex; flex-direction:column; gap:6px; justify-content:center;">
+              <span style="font-size:13px; text-align:center; color:#FAFAF8; background:#2B4C7E; border-radius:4px; padding:8px 10px; cursor:pointer;" style-hover="background:#1C1C1A;">{{ r.cta }}</span>
+              <span style="font-size:11px; text-align:center; color:#6B6B66; cursor:pointer;" style-hover="color:#1C1C1A;">{{ r.cta2 }}</span>
+            </div>
+          </div>
+        </sc-for>
+        <div style="padding:11px 16px; display:flex; align-items:center; justify-content:space-between;">
+          <span style="font-size:12px; color:#9A9A94;">รีวิวเฉลี่ยของคุณ 2.4 วัน · เกณฑ์แผนก 2 วัน</span>
+          <span style="font-size:12px; color:#2B4C7E; cursor:pointer;" style-hover="color:#1C1C1A;">ดูรายการที่รีวิวแล้ว</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:16px;">
+
+      <div style="border:1px solid #E3E2DD; border-radius:6px; background:#FFFFFF; overflow:hidden;">
+        <div style="padding:12px 16px; border-bottom:1px solid #E3E2DD;">
+          <div style="font-size:14px; font-weight:600;">สมดุล Squad — 3 เดือนข้างหน้า</div>
+          <div style="margin-top:3px; font-size:11px; color:#9A9A94;">คุณเป็นคนเดียวที่ย้ายคนข้าม Squad ได้</div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:112px repeat(3, minmax(0,1fr)); background:#F2F1ED; border-bottom:1px solid #E3E2DD;">
+          <div style="padding:7px 16px; font-size:11px; color:#6B6B66;">Squad</div>
+          <sc-for list="{{ balMonths }}" as="mo" hint-placeholder-count="3">
+            <div style="padding:7px 12px; font-size:12px; font-weight:500; border-left:1px solid #E3E2DD;">{{ mo }}</div>
+          </sc-for>
+        </div>
+
+        <sc-for list="{{ balance }}" as="b" hint-placeholder-count="3">
+          <div style="display:grid; grid-template-columns:112px repeat(3, minmax(0,1fr)); border-bottom:1px solid #E3E2DD;">
+            <div style="padding:11px 16px;">
+              <div style="font-size:13px; font-weight:600;">{{ b.name }}</div>
+              <div style="font-size:11px; color:#9A9A94; margin-top:1px;">{{ b.lead }}</div>
+            </div>
+            <sc-for list="{{ b.cells }}" as="c" hint-placeholder-count="3">
+              <div style="padding:11px 12px; border-left:1px solid #E3E2DD;">
+                <div style="display:flex; align-items:baseline; gap:5px;">
+                  <span style="font-size:9px; color:{{ c.color }};">{{ c.mark }}</span>
+                  <span style="font-size:18px; font-weight:600; color:{{ c.color }}; line-height:1;">{{ c.pct }}%</span>
+                </div>
+                <div style="margin-top:5px; height:4px; background:#F2F1ED; border-radius:2px; position:relative;">
+                  <div style="position:absolute; left:0; top:0; bottom:0; width:{{ c.barW }}%; background:{{ c.color }}; border-radius:2px;"></div>
+                  <div style="position:absolute; left:83.3%; top:-2px; bottom:-2px; width:1px; background:#9A9A94;"></div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </sc-for>
+
+        <div style="padding:13px 16px; display:flex; flex-direction:column; gap:8px;">
+          <div style="display:flex; align-items:flex-start; gap:8px;">
+            <span style="font-size:10px; color:#B33A3A; padding-top:3px;">▲</span>
+            <div style="font-size:13px; line-height:1.55;">ต.ค. Squad B ล้น <b style="color:#B33A3A;">118%</b> ขณะที่ Squad C ว่าง <b style="color:#5B7C99;">15%</b><div style="font-size:12px; color:#6B6B66; margin-top:3px;">ต้องทำ: ย้ายโครงการหนึ่งไป Squad C หรือย้ายสมาชิกชั่วคราว 4–6 สัปดาห์</div></div>
+          </div>
+          <div style="display:flex; align-items:center; gap:10px; margin-top:2px;">
+            <span style="font-size:12px; color:#FAFAF8; background:#2B4C7E; border-radius:4px; padding:7px 14px; cursor:pointer;" style-hover="background:#1C1C1A;">ดูภาระงานรายคน</span>
+            <span style="font-size:12px; color:#2B4C7E; cursor:pointer;" style-hover="color:#1C1C1A;">จำลองการย้าย</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="border:1px solid #E3E2DD; border-radius:6px; background:#FFFFFF; overflow:hidden;">
+        <div style="padding:12px 16px; border-bottom:1px solid #E3E2DD; display:flex; align-items:baseline; gap:10px;">
+          <span style="font-size:14px; font-weight:600;">คำขอกำลังเสริม</span>
+          <span style="font-size:12px; font-weight:600; color:#FAFAF8; background:#6B6B66; border-radius:4px; padding:1px 7px;">2</span>
+        </div>
+        <div style="padding:13px 16px; border-bottom:1px solid #E3E2DD;">
+          <div style="font-size:13px; line-height:1.55;"><b>Squad B</b> ขอ Mid เพิ่ม 1 คน เป็นเวลา <b>6 สัปดาห์</b></div>
+          <div style="margin-top:3px; font-size:12px; color:#6B6B66; line-height:1.55;">เหตุผล: ID-2026-020 เข้างวด DD · Squad C มีคุณเคว่างพอ 0.5 คน-สัปดาห์/สัปดาห์</div>
+          <div style="margin-top:10px; display:flex; align-items:center; gap:8px;">
+            <span style="font-size:12px; color:#FAFAF8; background:#2B4C7E; border-radius:4px; padding:7px 16px; cursor:pointer;" style-hover="background:#1C1C1A;">อนุมัติ</span>
+            <span style="font-size:12px; color:#6B6B66; border:1px solid #E3E2DD; border-radius:4px; padding:6px 16px; cursor:pointer;" style-hover="border-color:#1C1C1A; color:#1C1C1A;">ปฏิเสธ</span>
+            <span style="font-size:11px; color:#9A9A94; margin-left:2px;">ผลกระทบ: Squad C ขึ้นเป็น 96% ใน ต.ค.</span>
+          </div>
+        </div>
+        <div style="padding:13px 16px;">
+          <div style="font-size:13px; line-height:1.55;"><b>Squad A</b> ขอให้คุณซีได้งาน Site เพื่อการเติบโต</div>
+          <div style="margin-top:3px; font-size:12px; color:#6B6B66; line-height:1.55;">Squad A ไม่มีงาน Site ใน 6 เดือนข้างหน้า — ต้องอาศัยงานของ Squad อื่น</div>
+          <div style="margin-top:10px; display:flex; align-items:center; gap:8px;">
+            <span style="font-size:12px; color:#6B6B66; border:1px solid #E3E2DD; border-radius:4px; padding:6px 16px; cursor:pointer;" style-hover="border-color:#1C1C1A; color:#1C1C1A;">ดูทางเลือก</span>
+            <span style="font-size:11px; color:#9A9A94;">3 โครงการที่มีช่วงคุมงานใน ก.ย.–ธ.ค.</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="border:1px solid #E3E2DD; border-radius:6px; background:#F2F1ED; overflow:hidden;">
+        <div style="padding:12px 16px; border-bottom:1px solid #E3E2DD;">
+          <div style="font-size:14px; font-weight:600;">การพัฒนาคน</div>
+          <div style="margin-top:3px; font-size:11px; color:#6B6B66;">ภาพรวมความเป็นอยู่และการเติบโตของทีม ไม่ใช่การประเมินผลงาน</div>
+        </div>
+        <div style="padding:14px 16px; background:#FFFFFF; display:flex; flex-direction:column; gap:14px;">
+          <div>
+            <div style="display:flex; align-items:baseline; justify-content:space-between;">
+              <span style="font-size:13px; color:#6B6B66;">บันทึกรายสัปดาห์</span>
+              <span style="font-size:13px;"><b style="font-size:18px; font-weight:600;">14</b> <span style="color:#9A9A94;">/ 16 คน</span></span>
+            </div>
+            <div style="margin-top:7px; height:6px; background:#F2F1ED; border-radius:2px; position:relative; overflow:hidden;">
+              <div style="position:absolute; left:0; top:0; bottom:0; width:87.5%; background:#2F7A4F; border-radius:2px;"></div>
+            </div>
+            <div style="margin-top:6px; font-size:11px; color:#6B6B66;">เหลือ 2 คนที่ยังไม่ได้คุยสัปดาห์นี้ — คุณไอ (Squad B) · คุณแอล (Squad C)</div>
+          </div>
+
+          <div style="display:flex; align-items:flex-start; gap:9px; padding-top:12px; border-top:1px solid #E3E2DD;">
+            <span style="font-size:10px; color:#5B7C99; padding-top:3px;">○</span>
+            <div style="font-size:13px; line-height:1.55;"><b>2 คน</b> โหลดต่ำติดต่อกัน 2 เดือน<div style="font-size:12px; color:#6B6B66; margin-top:3px;">โอกาส: จับคู่กับงานที่ต่อยอดทักษะที่เขาตั้งเป้าไว้</div></div>
+          </div>
+
+          <div style="display:flex; align-items:flex-start; gap:9px;">
+            <span style="font-size:10px; color:#2B4C7E; padding-top:3px;">◆</span>
+            <div style="font-size:13px; line-height:1.55;"><b>3 เรื่อง</b> ที่ทีมขอความช่วยเหลือมา<div style="font-size:12px; color:#6B6B66; margin-top:3px;">2 เรื่องเป็นการขอคำแนะนำเรื่องแบบ · 1 เรื่องขอปรับตารางส่วนตัว</div></div>
+          </div>
+
+          <div style="display:flex; align-items:center; justify-content:space-between; padding-top:12px; border-top:1px solid #E3E2DD;">
+            <span style="font-size:11px; color:#9A9A94;">ข้อมูลนี้เห็นได้เฉพาะคุณและเจ้าตัว</span>
+            <span style="font-size:12px; color:#2B4C7E; cursor:pointer;" style-hover="color:#1C1C1A;">ดูทั้งแผนก →</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:1050}}">
+const INK='#1C1C1A', SUB='#6B6B66', MUTE='#9A9A94', BORDER='#E3E2DD', RED='#B33A3A', YEL='#C79A2E', GRN='#2F7A4F', BLU='#5B7C99', ACCENT='#2B4C7E';
+
+const KINDS = {
+  deliver: { label:'งานส่งมอบ', hint:'ตรวจคุณภาพงาน', glyph:'▣', boxBg:INK, boxBorder:INK, boxStyle:'solid', glyphColor:'#FAFAF8' },
+  plan:    { label:'แผนงาน', hint:'อนุมัติตัวเลข', glyph:'▤', boxBg:'#FFFFFF', boxBorder:INK, boxStyle:'solid', glyphColor:INK },
+  revision:{ label:'เกินโควตาแก้แบบ', hint:'ตัดสินเชิงพาณิชย์', glyph:'↻', boxBg:'#FFFFFF', boxBorder:SUB, boxStyle:'dashed', glyphColor:INK },
+  move:    { label:'ย้ายคน', hint:'จัดคนข้าม Squad', glyph:'⇄', boxBg:'#F2F1ED', boxBorder:BORDER, boxStyle:'solid', glyphColor:INK },
+};
+
+const ITEMS = [
+  { kind:'deliver', code:'ID-2026-004', title:'ส่งงาน งวด 3', wait:5,
+    detail:'Deliverable ครบ 12/12 · Café ทองหล่อ · Squad A',
+    sub:'เกินเกณฑ์รีวิว 3 วัน — ลูกค้านัดประชุม 6 ส.ค.', cta:'ตรวจ', cta2:'มอบให้คนอื่นตรวจ' },
+  { kind:'plan', code:'ID-2026-011', title:'แผนงานโครงการ', wait:4,
+    detail:'โดยคุณเอ · Margin 18% — ต่ำกว่าเป้า 30% อยู่ 12 จุด',
+    sub:'ต้องทำ: อนุมัติทั้งที่ต่ำกว่าเป้า หรือให้กลับไปตัดขอบเขต', cta:'ดู', cta2:'ส่งกลับให้แก้' },
+  { kind:'revision', code:'ID-2026-009', title:'ขอแก้แบบรอบที่ 3', wait:3,
+    detail:'เกินโควตา 2 รอบ · ต้นทุนเพิ่มประมาณ 2.5 คน-สัปดาห์ (฿100,000)',
+    sub:'คำถาม: เก็บเงินเพิ่ม หรือ แถมเพื่อรักษาความสัมพันธ์?', cta:'ตัดสิน', cta2:'ขอความเห็น BD' },
+  { kind:'move', code:'Squad A → C', title:'ขอย้ายคุณซี 4 สัปดาห์', wait:2,
+    detail:'เหตุผล: ต้องการประสบการณ์งาน Site ที่ Squad A ไม่มี',
+    sub:'ผลกระทบ: Squad A ลดลง 0.5 คน-สัปดาห์/สัปดาห์ ใน ก.ย.', cta:'พิจารณา', cta2:'คุยกับหัวหน้า Squad' },
+  { kind:'deliver', code:'ID-2026-020', title:'ส่งงาน งวด 1', wait:1,
+    detail:'Deliverable ครบ 8/8 · ร้านอาหารเอกมัย · Squad B',
+    sub:'ยังอยู่ในเกณฑ์รีวิว 2 วัน', cta:'ตรวจ', cta2:'มอบให้คนอื่นตรวจ' },
+];
+
+const BALANCE = [
+  { name:'Squad A', lead:'คุณเอ · 4 คน', pcts:[102,96,96] },
+  { name:'Squad B', lead:'คุณเอฟ · 6 คน', pcts:[88,92,118] },
+  { name:'Squad C', lead:'คุณจีน · 6 คน', pcts:[76,80,85] },
+];
+
+const band = p => p > 110 ? { color:RED, mark:'▲' } : (p >= 100 ? { color:YEL, mark:'◆' } : (p >= 65 ? { color:GRN, mark:'●' } : { color:BLU, mark:'○' }));
+
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      reviewCount: ITEMS.length,
+      kindLegend: Object.keys(KINDS).map(k => KINDS[k]),
+      reviews: ITEMS.slice().sort((a,b) => b.wait - a.wait).map(it => {
+        const k = KINDS[it.kind];
+        const over = it.wait >= 5, warn = it.wait >= 3;
+        return {
+          ...it, ...k,
+          kindLabel: k.label, kindHint: k.hint,
+          waitDays: it.wait,
+          waitColor: over ? RED : (warn ? YEL : SUB),
+          waitMark: over ? '▲' : (warn ? '◆' : '●'),
+          waitNote: over ? 'เกินเกณฑ์ 2 วัน' : (warn ? 'ใกล้เกินเกณฑ์' : 'อยู่ในเกณฑ์'),
+          railColor: over ? RED : (warn ? YEL : BORDER),
+        };
+      }),
+      balMonths: ['ส.ค. 69','ก.ย. 69','ต.ค. 69'],
+      balance: BALANCE.map(b => ({
+        name:b.name, lead:b.lead,
+        cells: b.pcts.map(p => ({ pct:p, ...band(p), barW: Math.min(100, p * (100/120)) })),
+      })),
+    };
+  }
+}
+</script>
+</body>
+</html>

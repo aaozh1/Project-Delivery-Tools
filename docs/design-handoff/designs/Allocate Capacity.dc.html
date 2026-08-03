@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  body { margin:0; background:#FAFAF8; font-family:'IBM Plex Sans Thai', sans-serif; color:#1C1C1A; -webkit-font-smoothing:antialiased; font-variant-numeric:tabular-nums; }
+  a { color:#2B4C7E; text-decoration:none; }
+  a:hover { color:#1C1C1A; }
+  @keyframes dpmBreathe { 0%,100% { opacity:0.25; } 50% { opacity:1; } }
+</style>
+</helmet>
+<div style="min-height:100vh; background:#FAFAF8;">
+
+  <div style="position:sticky; top:0; z-index:30; background:#FAFAF8; border-bottom:1px solid #E3E2DD;">
+    <div style="max-width:1440px; margin:0 auto; padding:14px 32px; display:flex; align-items:center; gap:20px;">
+      <span style="font-size:16px; color:#6B6B66; cursor:pointer; padding:4px 8px; border-radius:4px;" style-hover="background:#F2F1ED; color:#1C1C1A;">←</span>
+      <div>
+        <h1 style="margin:0; font-size:20px; font-weight:600; letter-spacing:-0.01em;">จัดสรรกำลังคน — Squad A (คุณเอ)</h1>
+        <div style="margin-top:3px; font-size:12px; color:#6B6B66;">สมาชิก 4 คน · รับผิดชอบ 3 โครงการ · แผนก ID</div>
+      </div>
+      <div style="flex:1;"></div>
+      <div style="display:flex; align-items:center; gap:8px; border:1px solid #E3E2DD; border-radius:4px; background:#FFFFFF; padding:4px 4px 4px 12px;">
+        <span style="font-size:14px; font-weight:600;">สัปดาห์ 32</span>
+        <span style="font-size:12px; color:#6B6B66;">4–8 ส.ค. 2569</span>
+        <span style="width:26px; text-align:center; font-size:13px; color:#6B6B66; cursor:pointer; border-radius:3px; padding:3px 0;" style-hover="background:#F2F1ED; color:#1C1C1A;">‹</span>
+        <span style="width:26px; text-align:center; font-size:13px; color:#6B6B66; cursor:pointer; border-radius:3px; padding:3px 0;" style-hover="background:#F2F1ED; color:#1C1C1A;">›</span>
+        <span style="font-size:12px; color:#6B6B66; cursor:pointer; border-left:1px solid #E3E2DD; padding:3px 10px;" style-hover="color:#1C1C1A;">วันนี้</span>
+      </div>
+      <span style="font-size:13px; font-weight:500; color:#FAFAF8; background:#2B4C7E; border-radius:4px; padding:9px 18px; cursor:pointer;" style-hover="background:#1C1C1A;" onClick="{{ copyLastWeek }}">คัดลอกจากสัปดาห์ก่อน</span>
+    </div>
+  </div>
+
+  <div style="max-width:1440px; margin:0 auto; padding:20px 32px 80px; display:flex; flex-direction:column; gap:16px;">
+
+    <div style="display:flex; align-items:center; justify-content:space-between; padding:10px 14px; border:1px solid #E3E2DD; border-radius:6px; background:#F2F1ED;">
+      <div style="display:flex; align-items:center; gap:10px; font-size:13px;">
+        <span style="font-size:10px; color:#6B6B66;">◆</span>
+        <span style="color:#1C1C1A;">จัดสรรได้เฉพาะสมาชิก Squad A — ถ้าต้องการคนจาก Squad อื่น หัวหน้าแผนกเป็นผู้ย้ายให้</span>
+      </div>
+      <span style="font-size:12px; color:#2B4C7E; border:1px solid #E3E2DD; background:#FFFFFF; border-radius:4px; padding:6px 14px; cursor:pointer; white-space:nowrap;" style-hover="border-color:#2B4C7E;">ส่งคำขอถึงหัวหน้าแผนก</span>
+    </div>
+
+    <div style="border:1px solid #E3E2DD; border-radius:6px; background:#FFFFFF; overflow:hidden;">
+
+      <div style="display:grid; grid-template-columns:212px 116px repeat(3, minmax(158px,1fr)) 100px; gap:0; border-bottom:1px solid #E3E2DD; background:#F2F1ED;">
+        <div style="padding:10px 16px; font-size:11px; color:#6B6B66;">สมาชิก</div>
+        <div style="padding:10px 12px; font-size:11px; color:#6B6B66; text-align:right; border-left:1px solid #E3E2DD;">รวมสัปดาห์นี้</div>
+        <sc-for list="{{ projects }}" as="pj" hint-placeholder-count="3">
+          <div style="padding:10px 12px; border-left:1px solid #E3E2DD;">
+            <div style="font-family:'IBM Plex Mono', monospace; font-size:12px; font-weight:500; color:#1C1C1A;">{{ pj.code }}</div>
+            <div style="font-size:11px; color:#9A9A94; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ pj.name }} · งวด {{ pj.phase }}</div>
+          </div>
+        </sc-for>
+        <div style="padding:10px 12px; font-size:11px; color:#6B6B66; text-align:right; border-left:1px solid #E3E2DD;">ว่าง</div>
+      </div>
+
+      <sc-for list="{{ rows }}" as="m" hint-placeholder-count="4">
+        <div style="display:grid; grid-template-columns:212px 116px repeat(3, minmax(158px,1fr)) 100px; gap:0; border-bottom:1px solid #E3E2DD; background:{{ m.rowBg }};">
+          <div style="padding:12px 16px;">
+            <div style="display:flex; align-items:baseline; gap:8px;">
+              <span style="font-size:14px; font-weight:600;">{{ m.name }}</span>
+              <span style="font-size:11px; color:#9A9A94;">{{ m.role }}</span>
+            </div>
+            <div style="margin-top:4px; font-size:11px; color:{{ m.noteColor }}; display:flex; align-items:center; gap:5px;">
+              <span style="font-size:9px;">{{ m.noteMark }}</span>{{ m.note }}
+            </div>
+          </div>
+
+          <div style="padding:12px; border-left:1px solid #E3E2DD; text-align:right;">
+            <div style="display:flex; align-items:baseline; justify-content:flex-end; gap:6px;">
+              <span style="font-size:10px; color:{{ m.totalColor }};">{{ m.totalMark }}</span>
+              <span style="font-size:20px; font-weight:600; color:{{ m.totalColor }};">{{ m.totalText }}</span>
+            </div>
+            <div style="margin-top:3px; font-size:11px; color:{{ m.capColor }};">{{ m.capText }}</div>
+          </div>
+
+          <sc-for list="{{ m.cells }}" as="c" hint-placeholder-count="3">
+            <div style="padding:12px; border-left:1px solid #E3E2DD; display:flex; align-items:center; gap:10px;">
+              <div style="display:flex; gap:2px;">
+                <sc-for list="{{ c.quarters }}" as="q" hint-placeholder-count="4">
+                  <span style="width:22px; height:26px; border-radius:2px; cursor:pointer; background:{{ q.bg }}; border:1px solid {{ q.border }}; display:block; transition:background 120ms ease;" style-hover="border-color:#1C1C1A;" onClick="{{ q.set }}" title="{{ q.title }}"></span>
+                </sc-for>
+              </div>
+              <span style="font-size:14px; font-weight:{{ c.weight }}; color:{{ c.color }}; min-width:34px;">{{ c.text }}</span>
+            </div>
+          </sc-for>
+
+          <div style="padding:12px; border-left:1px solid #E3E2DD; text-align:right; font-size:14px; color:{{ m.freeColor }}; font-weight:{{ m.freeWeight }};">{{ m.freeText }}</div>
+        </div>
+      </sc-for>
+
+      <div style="display:grid; grid-template-columns:212px 116px repeat(3, minmax(158px,1fr)) 100px; gap:0; border-bottom:1px solid #E3E2DD; background:#FAFAF8;">
+        <div style="padding:9px 16px; font-size:12px; color:#6B6B66;">คน-สัปดาห์รวม</div>
+        <div style="padding:9px 12px; border-left:1px solid #E3E2DD; text-align:right; font-size:14px; font-weight:600;">{{ grandPW }}</div>
+        <sc-for list="{{ summary }}" as="s" hint-placeholder-count="3">
+          <div style="padding:9px 12px; border-left:1px solid #E3E2DD; font-size:14px; font-weight:600;">{{ s.pw }}</div>
+        </sc-for>
+        <div style="border-left:1px solid #E3E2DD;"></div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:212px 116px repeat(3, minmax(158px,1fr)) 100px; gap:0; border-bottom:1px solid #E3E2DD; background:#FAFAF8;">
+        <div style="padding:9px 16px; font-size:12px; color:#6B6B66;">ต้นทุนสัปดาห์นี้</div>
+        <div style="padding:9px 12px; border-left:1px solid #E3E2DD; text-align:right; font-size:16px; font-weight:600;">{{ grandCost }}</div>
+        <sc-for list="{{ summary }}" as="s" hint-placeholder-count="3">
+          <div style="padding:9px 12px; border-left:1px solid #E3E2DD; font-size:16px; font-weight:600; transition:color 400ms ease; color:{{ s.costColor }};">{{ s.cost }}</div>
+        </sc-for>
+        <div style="border-left:1px solid #E3E2DD;"></div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:212px 116px repeat(3, minmax(158px,1fr)) 100px; gap:0; background:#FAFAF8;">
+        <div style="padding:9px 16px 14px; font-size:12px; color:#6B6B66;">สะสม / งบของงวด</div>
+        <div style="border-left:1px solid #E3E2DD;"></div>
+        <sc-for list="{{ summary }}" as="s" hint-placeholder-count="3">
+          <div style="padding:9px 12px 14px; border-left:1px solid #E3E2DD;">
+            <div style="display:flex; align-items:baseline; gap:6px;">
+              <span style="font-size:14px; font-weight:600; color:{{ s.statusColor }};">{{ s.usedPct }}%</span>
+              <span style="font-size:11px; color:#9A9A94;">/ 100%</span>
+            </div>
+            <div style="margin-top:5px; height:6px; background:#E3E2DD; border-radius:2px; position:relative; overflow:hidden;">
+              <div style="position:absolute; left:0; top:0; bottom:0; width:{{ s.barW }}%; background:{{ s.statusColor }}; transition:width 260ms ease;"></div>
+            </div>
+            <div style="margin-top:6px; font-size:11px; display:flex; align-items:center; gap:5px; color:{{ s.statusColor }};">
+              <span style="font-size:9px;">{{ s.statusMark }}</span>{{ s.statusText }}
+            </div>
+          </div>
+        </sc-for>
+        <div style="border-left:1px solid #E3E2DD;"></div>
+      </div>
+    </div>
+
+    <div style="display:flex; align-items:center; justify-content:space-between; font-size:11px; color:#9A9A94;">
+      <span>คุณเอฟ (Mid) ย้ายออกจาก Squad A เมื่อ 31 ก.ค. — งานที่ค้างถูกโอนให้คุณซี</span>
+      <span style="display:flex; align-items:center; gap:14px;">
+        <span>คลิกช่องสี่เหลี่ยมเพื่อกำหนดค่า · คลิกซ้ำเพื่อล้าง</span>
+        <span style="display:inline-flex; align-items:center; gap:5px;"><span style="width:12px; height:12px; background:#1C1C1A; border-radius:2px; display:inline-block;"></span>0.25 ต่อช่อง</span>
+      </span>
+    </div>
+
+    <div style="display:grid; grid-template-columns:minmax(0,1fr) 340px; gap:16px; align-items:start;">
+      <div style="border:1px solid #E3E2DD; border-radius:6px; background:#FFFFFF; overflow:hidden;">
+        <div style="padding:11px 16px; border-bottom:1px solid #E3E2DD; background:#F2F1ED; font-size:13px; font-weight:600;">ข้อเสนอ</div>
+        <div style="display:grid; grid-template-columns:minmax(0,1fr) 150px; gap:12px; align-items:center; padding:13px 16px; border-bottom:1px solid #E3E2DD;">
+          <div style="font-size:13px; line-height:1.55;">คุณดี ว่าง <b>0.25 คน-สัปดาห์</b> — ID-2026-011 งวด 2 ต้องการคนช่วยสัปดาห์นี้<div style="font-size:12px; color:#6B6B66; margin-top:3px;">อยู่ใน Squad A จัดสรรได้ทันที ไม่ต้องขออนุมัติ</div></div>
+          <span style="font-size:12px; text-align:center; color:#FAFAF8; background:#2B4C7E; border-radius:4px; padding:7px 12px; cursor:pointer;" style-hover="background:#1C1C1A;" onClick="{{ applySuggestion }}">{{ suggestionCta }}</span>
+        </div>
+        <div style="display:grid; grid-template-columns:minmax(0,1fr) 150px; gap:12px; align-items:center; padding:13px 16px;">
+          <div style="font-size:13px; line-height:1.55;">คุณซี ยังไม่เคยผ่านงาน <b>Site Supervision</b> และ Squad A ไม่มีงาน Site ใน 6 เดือนข้างหน้า<div style="font-size:12px; color:#6B6B66; margin-top:3px;">ต้องทำ: ขอหัวหน้าแผนกส่งไปร่วมงาน Site ของ Squad อื่นชั่วคราว — คุณส่งเรื่องได้ แต่อนุมัติที่ HoD</div></div>
+          <span style="font-size:12px; text-align:center; color:#6B6B66; border:1px solid #E3E2DD; border-radius:4px; padding:7px 12px; cursor:pointer;" style-hover="border-color:#1C1C1A; color:#1C1C1A;">ส่งเรื่องถึง HoD</span>
+        </div>
+      </div>
+
+      <div style="border:1px solid #E3E2DD; border-radius:6px; background:#FFFFFF; padding:14px 16px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+          <span style="font-size:13px; font-weight:600;">สถานะการกรอก</span>
+          <span style="display:inline-flex; align-items:center; gap:6px; font-size:11px; color:#9A9A94;">
+            <span style="width:5px; height:5px; border-radius:50%; background:#2F7A4F; animation:dpmBreathe 2.6s ease-in-out infinite; display:inline-block;"></span>{{ liveLabel }}
+          </span>
+        </div>
+        <div style="font-size:12px; color:#6B6B66; line-height:1.6;">{{ statusLine }}</div>
+        <div style="margin-top:12px; padding-top:12px; border-top:1px solid #E3E2DD; display:flex; align-items:center; justify-content:space-between;">
+          <span style="font-size:12px; color:#6B6B66;">ปิดรอบ ศุกร์ 17:00</span>
+          <span style="font-size:13px; font-weight:500; color:{{ submitFg }}; background:{{ submitBg }}; border:1px solid {{ submitBorder }}; border-radius:4px; padding:8px 16px; cursor:pointer;">ยืนยันสัปดาห์นี้</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:1100}}">
+const INK='#1C1C1A', SUB='#6B6B66', MUTE='#9A9A94', BORDER='#E3E2DD', RED='#B33A3A', YEL='#C79A2E', GRN='#2F7A4F', BLU='#5B7C99', ACCENT='#2B4C7E';
+const RATE = { Sr:60000, Mid:40000, Jr:24800 };
+
+const PROJECTS = [
+  { code:'ID-2026-004', name:'Café ทองหล่อ', phase:3, budget:900000, spent:549600 },
+  { code:'ID-2026-009', name:'สำนักงาน BTS อโศก', phase:2, budget:750000, spent:245000 },
+  { code:'ID-2026-011', name:'ร้านค้าปลีก สยาม', phase:2, budget:600000, spent:43400 },
+];
+
+const MEMBERS = [
+  { name:'คุณเอ', role:'Sr', capacity:1.00, note:'หัวหน้า Squad', noteKind:'plain' },
+  { name:'คุณซี', role:'Mid', capacity:1.00, note:'รับงานต่อจากคุณเอฟ', noteKind:'plain' },
+  { name:'คุณดี', role:'Jr', capacity:1.00, note:'ย้ายเข้า Squad A เมื่อ 1 ส.ค.', noteKind:'new' },
+  { name:'คุณอี', role:'Jr', capacity:0.75, note:'ลาพักร้อน 1 วัน (พฤ. 7 ส.ค.)', noteKind:'leave' },
+];
+
+const LAST_WEEK = [
+  [0.50, 0.50, 0],
+  [0.50, 0.25, 0.25],
+  [0,    0.50, 0.25],
+  [0.50, 0,    0.25],
+];
+
+const baht = n => '฿' + Math.round(n).toLocaleString('en-US');
+const pw = n => n.toFixed(2);
+
+class Component extends DCLogic {
+  state = {
+    flash: false,
+    suggestionDone: false,
+    grid: [
+      [0.50, 0.50, 0],
+      [0.50, 0.50, 0.25],
+      [0,    0.50, 0.25],
+      [0.50, 0,    0.50],
+    ],
+  };
+
+  componentWillUnmount() { clearTimeout(this._t); }
+
+  pulse() {
+    clearTimeout(this._t);
+    this.setState({ flash: true });
+    this._t = setTimeout(() => this.setState({ flash: false }), 900);
+  }
+
+  setCell(r, c, v) {
+    this.setState(s => {
+      const grid = s.grid.map((row, i) => i !== r ? row : row.map((x, j) => j !== c ? x : (x === v ? 0 : v)));
+      return { grid };
+    });
+    this.pulse();
+  }
+
+  renderVals() {
+    const { grid, flash, suggestionDone } = this.state;
+
+    const rows = MEMBERS.map((m, i) => {
+      const total = grid[i].reduce((a, b) => a + b, 0);
+      const over = total > 1.0001;
+      const overCap = !over && total > m.capacity + 0.0001;
+      const free = Math.max(0, m.capacity - total);
+      const totalColor = over ? RED : (overCap ? YEL : (total >= m.capacity - 0.0001 ? INK : BLU));
+      return {
+        name:m.name, role:m.role,
+        rowBg: over ? '#FDF6F6' : '#FFFFFF',
+        note: m.note,
+        noteMark: m.noteKind === 'leave' ? '◆' : (m.noteKind === 'new' ? '+' : '·'),
+        noteColor: m.noteKind === 'leave' ? YEL : (m.noteKind === 'new' ? ACCENT : MUTE),
+        totalText: pw(total),
+        totalMark: over ? '▲' : (overCap ? '◆' : (total < m.capacity - 0.0001 ? '○' : '●')),
+        totalColor,
+        capText: over ? 'เกินเต็มสัปดาห์ — ลดลง ' + pw(total - 1) : (overCap ? 'เกินกำลังที่ว่างจริง ' + pw(m.capacity) : 'กำลังรับได้ ' + pw(m.capacity)),
+        capColor: over ? RED : (overCap ? YEL : MUTE),
+        freeText: free < 0.0001 ? '—' : pw(free),
+        freeColor: free > 0.0001 ? BLU : MUTE,
+        freeWeight: free > 0.0001 ? 600 : 400,
+        cells: grid[i].map((v, j) => ({
+          text: v > 0 ? pw(v) : 'ว่าง',
+          color: v > 0 ? (over ? RED : INK) : MUTE,
+          weight: v > 0 ? 600 : 400,
+          quarters: [1,2,3,4].map(q => {
+            const filled = v >= q * 0.25 - 0.0001;
+            return {
+              bg: filled ? (over ? RED : INK) : '#FFFFFF',
+              border: filled ? (over ? RED : INK) : BORDER,
+              title: pw(q * 0.25) + ' คน-สัปดาห์',
+              set: () => this.setCell(i, j, q * 0.25),
+            };
+          }),
+        })),
+      };
+    });
+
+    const summary = PROJECTS.map((p, j) => {
+      const colPW = grid.reduce((a, row) => a + row[j], 0);
+      const cost = grid.reduce((a, row, i) => a + row[j] * RATE[MEMBERS[i].role], 0);
+      const usedPct = Math.round(((p.spent + cost) / p.budget) * 100);
+      const statusColor = usedPct >= 90 ? RED : (usedPct >= 60 ? YEL : GRN);
+      return {
+        pw: pw(colPW),
+        cost: baht(cost),
+        costColor: flash ? ACCENT : INK,
+        usedPct,
+        barW: Math.min(100, usedPct),
+        statusColor,
+        statusMark: usedPct >= 90 ? '▲' : (usedPct >= 60 ? '◆' : '●'),
+        statusText: usedPct >= 90 ? 'เกือบเต็มงบ' : (usedPct >= 60 ? 'ใกล้เต็ม' : 'ปกติ'),
+      };
+    });
+
+    const grandPW = grid.reduce((a, row) => a + row.reduce((x, y) => x + y, 0), 0);
+    const grandCost = grid.reduce((a, row, i) => a + row.reduce((x, y) => x + y, 0) * RATE[MEMBERS[i].role], 0);
+    const problems = rows.filter(r => r.totalColor === RED).length;
+    const warns = rows.filter(r => r.totalColor === YEL).length;
+
+    return {
+      projects: PROJECTS.map(p => ({ code:p.code, name:p.name, phase:p.phase })),
+      rows, summary,
+      grandPW: pw(grandPW),
+      grandCost: baht(grandCost),
+      liveLabel: flash ? 'กำลังคำนวณ' : 'สด',
+      statusLine: problems
+        ? 'มี ' + problems + ' คนที่จัดเกิน 1.00 คน-สัปดาห์ — แก้ให้ครบก่อนยืนยัน'
+        : (warns ? 'มี ' + warns + ' คนที่จัดเกินกำลังที่ว่างจริง (วันลา) — ยืนยันได้แต่ต้นทุนจะคลาดเคลื่อน' : 'กรอกครบทุกคนแล้ว พร้อมยืนยัน'),
+      submitFg: problems ? MUTE : '#FAFAF8',
+      submitBg: problems ? '#F2F1ED' : ACCENT,
+      submitBorder: problems ? BORDER : ACCENT,
+      suggestionCta: suggestionDone ? 'จัดแล้ว ✓' : 'จัดให้ 0.25',
+      applySuggestion: () => { if (!this.state.suggestionDone) { this.setState({ suggestionDone: true }); this.setCell(2, 2, 0.50); } },
+      copyLastWeek: () => { this.setState({ grid: LAST_WEEK.map(r => r.slice()) }); this.pulse(); },
+    };
+  }
+}
+</script>
+</body>
+</html>

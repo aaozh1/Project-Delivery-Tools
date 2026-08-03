@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  body { margin:0; background:#FAFAF8; font-family:'IBM Plex Sans Thai', sans-serif; color:#1C1C1A; -webkit-font-smoothing:antialiased; font-variant-numeric:tabular-nums; }
+  a { color:#2B4C7E; text-decoration:none; }
+  a:hover { color:#1C1C1A; }
+</style>
+</helmet>
+<div style="min-height:100vh; background:#FAFAF8;">
+
+  <div style="position:sticky; top:0; z-index:30; background:#FAFAF8; border-bottom:1px solid #E3E2DD;">
+    <div style="max-width:1440px; margin:0 auto; padding:14px 32px; display:flex; align-items:center; gap:20px;">
+      <span style="font-size:16px; color:#6B6B66; cursor:pointer; padding:4px 8px; border-radius:4px;" style-hover="background:#F2F1ED; color:#1C1C1A;" onClick="{{ goBack }}">←</span>
+      <div>
+        <h1 style="margin:0; font-size:20px; font-weight:600; letter-spacing:-0.01em;">{{ pageTitle }}</h1>
+        <div style="margin-top:3px; font-size:12px; color:#6B6B66;">{{ pageSub }}</div>
+      </div>
+      <div style="flex:1;"></div>
+      <div style="display:flex; align-items:center; gap:2px; border:1px solid #E3E2DD; border-radius:4px; background:#FFFFFF; padding:3px;">
+        <span style="font-size:12px; padding:5px 12px; border-radius:3px; cursor:pointer; background:#F2F1ED; color:#1C1C1A; font-weight:600;">รายเดือน</span>
+        <span style="font-size:12px; padding:5px 12px; border-radius:3px; cursor:pointer; color:#6B6B66;" style-hover="color:#1C1C1A;">รายสัปดาห์</span>
+      </div>
+      <span style="font-size:12px; color:#1C1C1A; border:1px solid #E3E2DD; background:#FFFFFF; border-radius:4px; padding:7px 12px; cursor:pointer;" style-hover="border-color:#1C1C1A;">แผนก Interior ▾</span>
+      <div style="display:flex; align-items:center; gap:6px; border:1px solid #E3E2DD; border-radius:4px; background:#FFFFFF; padding:4px 4px 4px 12px;">
+        <span style="width:22px; text-align:center; font-size:13px; color:#6B6B66; cursor:pointer; border-radius:3px;" style-hover="background:#F2F1ED; color:#1C1C1A;">‹</span>
+        <span style="font-size:13px; font-weight:500;">ส.ค. 2569 – ม.ค. 2570</span>
+        <span style="width:22px; text-align:center; font-size:13px; color:#6B6B66; cursor:pointer; border-radius:3px;" style-hover="background:#F2F1ED; color:#1C1C1A;">›</span>
+      </div>
+      <span style="font-size:12px; color:#6B6B66; border:1px solid #E3E2DD; background:#FFFFFF; border-radius:4px; padding:7px 14px; cursor:pointer;" style-hover="border-color:#1C1C1A; color:#1C1C1A;">ส่งออก Excel</span>
+    </div>
+  </div>
+
+  <div style="max-width:1440px; margin:0 auto; padding:20px 32px 80px; display:flex; flex-direction:column; gap:16px;">
+
+    <sc-if value="{{ isGrid }}" hint-placeholder-val="{{ true }}">
+      <div style="display:flex; align-items:center; justify-content:space-between;">
+        <div style="display:flex; align-items:center; gap:18px; font-size:11px; color:#6B6B66;">
+          <span style="display:inline-flex; align-items:center; gap:5px;"><span style="color:#B33A3A; font-size:9px;">▲</span>เกิน 110%</span>
+          <span style="display:inline-flex; align-items:center; gap:5px;"><span style="color:#C79A2E; font-size:9px;">◆</span>100–110%</span>
+          <span style="display:inline-flex; align-items:center; gap:5px;"><span style="color:#2F7A4F; font-size:9px;">●</span>65–100%</span>
+          <span style="display:inline-flex; align-items:center; gap:5px;"><span style="color:#5B7C99; font-size:9px;">○</span>ต่ำกว่า 65% (โหลดต่ำ)</span>
+          <span style="color:#E3E2DD;">|</span>
+          <span>จุด = จำนวนโครงการที่ทำพร้อมกัน</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="font-size:11px; color:#9A9A94;">รูปแบบช่อง</span>
+          <div style="display:flex; align-items:center; gap:2px; border:1px solid #E3E2DD; border-radius:4px; background:#FFFFFF; padding:3px;">
+            <span style="font-size:12px; padding:5px 12px; border-radius:3px; cursor:pointer; color:{{ v1Fg }}; background:{{ v1Bg }}; font-weight:{{ v1W }};" onClick="{{ useV1 }}">แนว 1 · ตัวเลข + จุด</span>
+            <span style="font-size:12px; padding:5px 12px; border-radius:3px; cursor:pointer; color:{{ v2Fg }}; background:{{ v2Bg }}; font-weight:{{ v2W }};" onClick="{{ useV2 }}">แนว 2 · ช่องความร้อน</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="border:1px solid #E3E2DD; border-radius:6px; background:#FFFFFF; overflow:hidden;">
+        <div style="display:grid; grid-template-columns:216px repeat(6, minmax(118px,1fr)) 96px; background:#F2F1ED; border-bottom:1px solid #E3E2DD;">
+          <div style="padding:9px 16px; font-size:11px; color:#6B6B66;">Squad / สมาชิก</div>
+          <sc-for list="{{ months }}" as="mo" hint-placeholder-count="6">
+            <div style="padding:9px 12px; font-size:12px; font-weight:500; border-left:1px solid #E3E2DD;">{{ mo }}</div>
+          </sc-for>
+          <div style="padding:9px 12px; font-size:11px; color:#6B6B66; text-align:right; border-left:1px solid #E3E2DD;">เฉลี่ย</div>
+        </div>
+
+        <sc-for list="{{ squads }}" as="sq" hint-placeholder-count="3">
+          <div>
+            <div style="display:grid; grid-template-columns:216px repeat(6, minmax(118px,1fr)) 96px; border-bottom:1px solid #E3E2DD; background:#FAFAF8; cursor:pointer;" style-hover="background:#F2F1ED;" onClick="{{ sq.toggle }}">
+              <div style="padding:11px 16px; display:flex; align-items:center; gap:8px;">
+                <span style="font-size:9px; color:#9A9A94;">{{ sq.caret }}</span>
+                <span style="font-size:14px; font-weight:600;">{{ sq.name }}</span>
+                <span style="font-size:11px; color:#9A9A94;">{{ sq.meta }}</span>
+              </div>
+              <sc-for list="{{ sq.totals }}" as="t" hint-placeholder-count="6">
+                <div style="padding:11px 12px; border-left:1px solid #E3E2DD; display:flex; align-items:baseline; gap:6px;">
+                  <span style="font-size:9px; color:{{ t.color }};">{{ t.mark }}</span>
+                  <span style="font-size:16px; font-weight:600; color:{{ t.color }};">{{ t.pct }}%</span>
+                </div>
+              </sc-for>
+              <div style="padding:11px 12px; border-left:1px solid #E3E2DD; text-align:right; font-size:14px; font-weight:600; color:#6B6B66;">{{ sq.avg }}%</div>
+            </div>
+
+            <sc-if value="{{ sq.open }}" hint-placeholder-val="{{ true }}">
+              <sc-for list="{{ sq.members }}" as="p" hint-placeholder-count="4">
+                <div style="display:grid; grid-template-columns:216px repeat(6, minmax(118px,1fr)) 96px; border-bottom:1px solid #E3E2DD;">
+                  <div style="padding:10px 16px 10px 38px; cursor:pointer;" style-hover="background:#FAFAF8;" onClick="{{ p.open }}">
+                    <div style="display:flex; align-items:baseline; gap:8px;">
+                      <span style="font-size:14px; font-weight:500; color:#2B4C7E;">{{ p.name }}</span>
+                      <span style="font-size:11px; color:#9A9A94;">{{ p.role }}</span>
+                    </div>
+                    <div style="margin-top:2px; font-size:11px; color:#9A9A94;">เกณฑ์โครงการพร้อมกัน {{ p.limit }}</div>
+                  </div>
+
+                  <sc-for list="{{ p.cells }}" as="c" hint-placeholder-count="6">
+                    <div style="border-left:1px solid #E3E2DD; padding:9px 12px; background:{{ c.cellBg }};">
+
+                      <sc-if value="{{ c.isV1 }}" hint-placeholder-val="{{ true }}">
+                        <div>
+                          <div style="display:flex; align-items:baseline; gap:6px;">
+                            <span style="font-size:9px; color:{{ c.color }};">{{ c.mark }}</span>
+                            <span style="font-size:17px; font-weight:600; color:{{ c.color }}; line-height:1.1;">{{ c.pct }}%</span>
+                          </div>
+                          <div style="margin-top:5px; height:4px; background:#F2F1ED; border-radius:2px; position:relative;">
+                            <div style="position:absolute; left:0; top:0; bottom:0; width:{{ c.barW }}%; background:{{ c.color }}; border-radius:2px;"></div>
+                            <div style="position:absolute; left:83.3%; top:-2px; bottom:-2px; width:1px; background:#9A9A94;"></div>
+                          </div>
+                          <div style="margin-top:6px; display:flex; align-items:center; gap:4px;">
+                            <sc-for list="{{ c.pips }}" as="pp" hint-placeholder-count="2">
+                              <span style="width:7px; height:7px; border-radius:50%; display:block; background:{{ pp.bg }}; border:1px solid {{ pp.border }};"></span>
+                            </sc-for>
+                            <span style="font-size:11px; color:{{ c.countColor }}; margin-left:2px;">{{ c.countText }}</span>
+                          </div>
+                        </div>
+                      </sc-if>
+
+                      <sc-if value="{{ c.isV2 }}" hint-placeholder-val="{{ false }}">
+                        <div style="display:flex; align-items:center; gap:10px;">
+                          <span style="font-size:12px; font-weight:600; color:{{ c.countColor }}; border:1px solid {{ c.countBorder }}; border-radius:3px; min-width:20px; text-align:center; padding:2px 0;">{{ c.count }}</span>
+                          <div style="min-width:0;">
+                            <div style="display:flex; align-items:baseline; gap:5px;">
+                              <span style="font-size:9px; color:{{ c.color }};">{{ c.mark }}</span>
+                              <span style="font-size:19px; font-weight:600; color:{{ c.color }}; line-height:1;">{{ c.pct }}%</span>
+                            </div>
+                            <div style="font-size:10px; color:#9A9A94; margin-top:3px;">{{ c.countText }}</div>
+                          </div>
+                        </div>
+                      </sc-if>
+
+                    </div>
+                  </sc-for>
+
+                  <div style="border-left:1px solid #E3E2DD; padding:10px 12px; text-align:right;">
+                    <div style="font-size:14px; font-weight:600; color:#6B6B66;">{{ p.avg }}%</div>
+                    <div style="font-size:10px; color:#9A9A94; margin-top:2px;">{{ p.avgCount }}</div>
+                  </div>
+                </div>
+              </sc-for>
+            </sc-if>
+          </div>
+        </sc-for>
+      </div>
+
+      <div style="border:1px solid #E3E2DD; border-radius:6px; background:#FFFFFF; overflow:hidden;">
+        <div style="padding:11px 16px; border-bottom:1px solid #E3E2DD; background:#F2F1ED; display:flex; align-items:center; gap:10px;">
+          <span style="font-size:13px; font-weight:600;">ประเด็นที่พบ</span>
+          <span style="font-size:12px; font-weight:600; color:#FAFAF8; background:#6B6B66; border-radius:4px; padding:1px 7px;">3</span>
+          <span style="font-size:12px; color:#9A9A94;">อ่านได้ทั้งในแง่ความเสี่ยงโครงการ และความเป็นอยู่ของทีม</span>
+        </div>
+        <div style="display:grid; grid-template-columns:76px minmax(0,1fr) 150px; gap:14px; align-items:center; padding:13px 16px; border-bottom:1px solid #E3E2DD;">
+          <div style="display:flex; align-items:center; gap:6px;"><span style="font-size:10px; color:#B33A3A;">▲</span><span style="font-size:11px; font-weight:600; color:#B33A3A;">เกินเกณฑ์</span></div>
+          <div style="font-size:13px; line-height:1.55;">คุณเอ ทำ <b>3 โครงการพร้อมกัน</b> ใน ส.ค.–ก.ย. เกินเกณฑ์ 2 โครงการของตำแหน่ง Senior<div style="font-size:12px; color:#6B6B66; margin-top:3px;">ต้องทำ: โอน ID-2026-011 ให้คุณอี หรือเลื่อนงวด 1 ไป ต.ค. — ทั้งสองทางอยู่ใน Squad A ทำได้เอง</div></div>
+          <span style="font-size:12px; text-align:center; color:#FAFAF8; background:#2B4C7E; border-radius:4px; padding:7px 12px; cursor:pointer;" style-hover="background:#1C1C1A;">ดูรายละเอียด</span>
+        </div>
+        <div style="display:grid; grid-template-columns:76px minmax(0,1fr) 150px; gap:14px; align-items:center; padding:13px 16px; border-bottom:1px solid #E3E2DD;">
+          <div style="display:flex; align-items:center; gap:6px;"><span style="font-size:10px; color:#B33A3A;">▲</span><span style="font-size:11px; font-weight:600; color:#B33A3A;">เกินกำลัง</span></div>
+          <div style="font-size:13px; line-height:1.55;">Squad B ล้น <b>118–120%</b> ใน ต.ค.–พ.ย. ขณะที่ Squad A เหลือพื้นที่ <b>16%</b><div style="font-size:12px; color:#6B6B66; margin-top:3px;">ต้องทำ: ย้ายโครงการหนึ่งไป Squad A หรือย้ายสมาชิกชั่วคราว — การย้ายข้าม Squad ต้องอนุมัติโดยคุณ (หัวหน้าแผนก)</div></div>
+          <span style="font-size:12px; text-align:center; color:#FAFAF8; background:#2B4C7E; border-radius:4px; padding:7px 12px; cursor:pointer;" style-hover="background:#1C1C1A;">ดูทางเลือก</span>
+        </div>
+        <div style="display:grid; grid-template-columns:76px minmax(0,1fr) 150px; gap:14px; align-items:center; padding:13px 16px;">
+          <div style="display:flex; align-items:center; gap:6px;"><span style="font-size:10px; color:#5B7C99;">○</span><span style="font-size:11px; font-weight:600; color:#5B7C99;">โหลดต่ำ</span></div>
+          <div style="font-size:13px; line-height:1.55;">คุณดี โหลดต่ำกว่า 65% ติดต่อกัน <b>2 เดือน</b> (ส.ค. 60% · ธ.ค. 50%)<div style="font-size:12px; color:#6B6B66; margin-top:3px;">ต้องทำ: เพิ่มงานที่ต่อยอดทักษะ — Growth Profile ระบุว่ายังขาดประสบการณ์งานร้านค้าปลีก</div></div>
+          <span style="font-size:12px; text-align:center; color:#6B6B66; border:1px solid #E3E2DD; border-radius:4px; padding:7px 12px; cursor:pointer;" style-hover="border-color:#1C1C1A; color:#1C1C1A;">ดู Growth Profile</span>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isPerson }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex; flex-direction:column; gap:16px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; border:1px solid #E3E2DD; border-radius:6px; background:#FFFFFF; padding:14px 18px;">
+          <div style="display:flex; align-items:baseline; gap:12px;">
+            <span style="font-size:20px; font-weight:600;">{{ person.name }}</span>
+            <span style="font-size:13px; color:#6B6B66;">{{ person.role }} · Squad {{ person.squad }}</span>
+            <span style="font-size:12px; color:#9A9A94;">เกณฑ์โครงการพร้อมกัน {{ person.limit }}</span>
+          </div>
+          <span style="font-size:12px; color:#6B6B66; border:1px solid #E3E2DD; border-radius:4px; padding:7px 14px; cursor:pointer;" style-hover="border-color:#1C1C1A; color:#1C1C1A;">ดู Growth Profile</span>
+        </div>
+
+        <div style="border:1px solid #E3E2DD; border-radius:6px; background:#FFFFFF; overflow:hidden;">
+          <div style="display:grid; grid-template-columns:250px repeat(6, minmax(110px,1fr)); background:#F2F1ED; border-bottom:1px solid #E3E2DD;">
+            <div style="padding:9px 16px; font-size:11px; color:#6B6B66;">โครงการ</div>
+            <sc-for list="{{ months }}" as="mo" hint-placeholder-count="6">
+              <div style="padding:9px 12px; font-size:12px; font-weight:500; border-left:1px solid #E3E2DD;">{{ mo }}</div>
+            </sc-for>
+          </div>
+
+          <sc-for list="{{ person.timeline }}" as="t" hint-placeholder-count="4">
+            <div style="display:grid; grid-template-columns:250px repeat(6, minmax(110px,1fr)); border-bottom:1px solid #E3E2DD; align-items:center;">
+              <div style="padding:12px 16px;">
+                <div style="display:flex; align-items:baseline; gap:10px;">
+                  <span style="font-family:'IBM Plex Mono', monospace; font-size:12px;">{{ t.code }}</span>
+                  <span style="font-size:12px; color:#6B6B66;">งวด {{ t.phase }}</span>
+                </div>
+                <div style="font-size:11px; color:#9A9A94; margin-top:2px;">{{ t.name }}</div>
+              </div>
+              <sc-for list="{{ t.bars }}" as="b" hint-placeholder-count="6">
+                <div style="border-left:1px solid #E3E2DD; padding:12px;">
+                  <div style="height:16px; border-radius:2px; background:{{ b.bg }}; border:1px solid {{ b.border }}; display:flex; align-items:center; justify-content:center;">
+                    <span style="font-size:10px; color:{{ b.fg }};">{{ b.label }}</span>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </sc-for>
+
+          <div style="display:grid; grid-template-columns:250px repeat(6, minmax(110px,1fr)); border-bottom:1px solid #E3E2DD; background:#FAFAF8;">
+            <div style="padding:9px 16px; font-size:12px; color:#6B6B66;">จำนวนโครงการพร้อมกัน</div>
+            <sc-for list="{{ person.counts }}" as="c" hint-placeholder-count="6">
+              <div style="border-left:1px solid #E3E2DD; padding:9px 12px; display:flex; align-items:center; gap:6px;">
+                <span style="font-size:15px; font-weight:600; color:{{ c.color }};">{{ c.n }}</span>
+                <span style="font-size:11px; color:{{ c.color }};">{{ c.note }}</span>
+              </div>
+            </sc-for>
+          </div>
+          <div style="display:grid; grid-template-columns:250px repeat(6, minmax(110px,1fr)); border-bottom:1px solid #E3E2DD; background:#FAFAF8;">
+            <div style="padding:9px 16px; font-size:12px; color:#6B6B66;">คน-สัปดาห์</div>
+            <sc-for list="{{ person.pws }}" as="w" hint-placeholder-count="6">
+              <div style="border-left:1px solid #E3E2DD; padding:9px 12px; font-size:15px; font-weight:600;">{{ w }}</div>
+            </sc-for>
+          </div>
+          <div style="display:grid; grid-template-columns:250px repeat(6, minmax(110px,1fr)); background:#FAFAF8;">
+            <div style="padding:9px 16px 14px; font-size:12px; color:#6B6B66;">% โหลด</div>
+            <sc-for list="{{ person.loads }}" as="l" hint-placeholder-count="6">
+              <div style="border-left:1px solid #E3E2DD; padding:9px 12px 14px;">
+                <div style="display:flex; align-items:baseline; gap:6px;">
+                  <span style="font-size:9px; color:{{ l.color }};">{{ l.mark }}</span>
+                  <span style="font-size:17px; font-weight:600; color:{{ l.color }};">{{ l.pct }}%</span>
+                </div>
+                <div style="margin-top:5px; height:4px; background:#E3E2DD; border-radius:2px; position:relative;">
+                  <div style="position:absolute; left:0; top:0; bottom:0; width:{{ l.barW }}%; background:{{ l.color }}; border-radius:2px;"></div>
+                  <div style="position:absolute; left:83.3%; top:-2px; bottom:-2px; width:1px; background:#9A9A94;"></div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="display:flex; align-items:center; gap:18px; font-size:11px; color:#6B6B66;">
+          <span style="display:inline-flex; align-items:center; gap:6px;"><span style="width:22px; height:12px; background:#1C1C1A; border-radius:2px; display:inline-block;"></span>ช่วงงานหนัก</span>
+          <span style="display:inline-flex; align-items:center; gap:6px;"><span style="width:22px; height:12px; background:#E3E2DD; border-radius:2px; display:inline-block;"></span>ช่วงเริ่ม/ปิดงาน</span>
+          <span style="display:inline-flex; align-items:center; gap:6px;"><span style="width:22px; height:12px; background:#FFFFFF; border:1px solid #E3E2DD; border-radius:2px; display:inline-block;"></span>ไม่มีงานในเดือนนั้น</span>
+          <span style="color:#E3E2DD;">|</span>
+          <span>เส้นบนแถบ % คือระดับ 100%</span>
+        </div>
+      </div>
+    </sc-if>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:1200}}">
+const INK='#1C1C1A', SUB='#6B6B66', MUTE='#9A9A94', BORDER='#E3E2DD', RED='#B33A3A', YEL='#C79A2E', GRN='#2F7A4F', BLU='#5B7C99', ACCENT='#2B4C7E';
+const MONTHS = ['ส.ค. 69','ก.ย. 69','ต.ค. 69','พ.ย. 69','ธ.ค. 69','ม.ค. 70'];
+const LIMIT = { Sr:2, Mid:3, Jr:2 };
+
+const band = p => p > 110 ? { color:RED, mark:'▲' } : (p >= 100 ? { color:YEL, mark:'◆' } : (p >= 65 ? { color:GRN, mark:'●' } : { color:BLU, mark:'○' }));
+const tintOf = p => p > 110 ? '#FBF1F1' : (p >= 100 ? '#FBF6EA' : (p >= 65 ? '#F3F7F3' : '#F1F4F7'));
+
+const SQUADS = [
+  { key:'A', name:'Squad A', lead:'คุณเอ', totals:[102,96,96,84,55,78], members:[
+      { name:'คุณเอ', role:'Sr',  load:[110,105,95,90,45,72], count:[3,3,2,2,1,2] },
+      { name:'คุณซี', role:'Mid', load:[95,98,102,88,70,84],  count:[2,2,3,3,2,2] },
+      { name:'คุณดี', role:'Jr',  load:[60,85,90,75,50,68],   count:[1,2,2,1,1,2] },
+      { name:'คุณอี', role:'Jr',  load:[92,95,97,93,80,86],   count:[2,2,2,2,2,2] },
+  ]},
+  { key:'B', name:'Squad B', lead:'คุณเอฟ', totals:[88,92,118,120,95,90], members:[
+      { name:'คุณเอฟ', role:'Sr',  load:[92,96,124,126,98,94], count:[2,3,3,3,2,2] },
+      { name:'คุณจี',  role:'Mid', load:[86,90,120,122,96,88], count:[2,2,3,3,2,2] },
+      { name:'คุณเอช', role:'Mid', load:[90,94,116,118,94,90], count:[2,2,3,3,2,2] },
+      { name:'คุณไอ',  role:'Jr',  load:[84,88,112,116,92,88], count:[1,2,2,2,2,2] },
+  ]},
+  { key:'C', name:'Squad C', lead:'คุณจีน', totals:[76,80,85,91,88,84], members:[
+      { name:'คุณจีน', role:'Sr',  load:[80,84,88,94,90,86], count:[2,2,2,2,2,2] },
+      { name:'คุณเค',  role:'Mid', load:[78,82,86,92,90,84], count:[2,2,2,3,2,2] },
+      { name:'คุณแอล', role:'Jr',  load:[70,74,81,87,84,82], count:[1,1,2,2,2,1] },
+  ]},
+];
+
+const PERSON = {
+  name:'คุณซี', role:'Mid', squad:'A', limit:3,
+  timeline: [
+    { code:'ID-2026-004', name:'Café ทองหล่อ', phase:3, bars:[2,2,1,0,0,0] },
+    { code:'ID-2026-009', name:'สำนักงาน BTS อโศก', phase:2, bars:[1,2,2,1,0,0] },
+    { code:'ID-2026-011', name:'ร้านค้าปลีก สยาม', phase:1, bars:[0,0,1,2,2,2] },
+    { code:'ID-2026-015', name:'คอนโด สุขุมวิท 31', phase:1, bars:[0,0,0,1,1,2] },
+  ],
+  loads: [95,98,102,88,70,84],
+  pws: ['4.10','4.20','4.40','3.80','3.00','3.60'],
+};
+
+class Component extends DCLogic {
+  state = { view:'grid', cell:'v1', open:{ A:true, B:false, C:false } };
+
+  renderVals() {
+    const { view, cell, open } = this.state;
+    const isPerson = view === 'person';
+    const v1 = cell === 'v1';
+    const avg = a => Math.round(a.reduce((x,y)=>x+y,0) / a.length);
+
+    const squads = SQUADS.map(sq => ({
+      name: sq.name,
+      meta: '(' + sq.lead + ') · ' + sq.members.length + ' คน' + (open[sq.key] ? '' : ' · คลิกเพื่อขยาย'),
+      caret: open[sq.key] ? '▼' : '▶',
+      open: !!open[sq.key],
+      toggle: () => this.setState(s => ({ open: { ...s.open, [sq.key]: !s.open[sq.key] } })),
+      avg: avg(sq.totals),
+      totals: sq.totals.map(p => ({ pct:p, ...band(p) })),
+      members: sq.members.map(m => {
+        const lim = LIMIT[m.role];
+        return {
+          name: m.name, role: m.role, limit: lim + ' โครงการ',
+          avg: avg(m.load),
+          avgCount: 'เฉลี่ย ' + (m.count.reduce((x,y)=>x+y,0)/m.count.length).toFixed(1) + ' โครงการ',
+          open: () => this.setState({ view:'person' }),
+          cells: m.load.map((p, i) => {
+            const b = band(p);
+            const n = m.count[i];
+            const overN = n > lim;
+            return {
+              isV1: v1, isV2: !v1,
+              pct: p, mark: b.mark, color: b.color,
+              barW: Math.min(100, p * (100/120)),
+              cellBg: v1 ? '#FFFFFF' : tintOf(p),
+              count: n,
+              countText: overN ? 'เกินเกณฑ์' : n + ' โครงการ',
+              countColor: overN ? RED : SUB,
+              countBorder: overN ? RED : BORDER,
+              pips: Array.from({ length: Math.max(n, lim) }, (_, k) => {
+                const active = k < n;
+                const beyond = k >= lim;
+                return {
+                  bg: active ? (beyond ? RED : INK) : '#FFFFFF',
+                  border: active ? (beyond ? RED : INK) : BORDER,
+                };
+              }),
+            };
+          }),
+        };
+      }),
+    }));
+
+    const person = {
+      ...PERSON,
+      limit: PERSON.limit + ' โครงการ',
+      timeline: PERSON.timeline.map(t => ({
+        code:t.code, name:t.name, phase:t.phase,
+        bars: t.bars.map(v => v === 2
+          ? { bg:INK, border:INK, fg:'#FAFAF8', label:'หนัก' }
+          : (v === 1 ? { bg:BORDER, border:BORDER, fg:SUB, label:'เริ่ม/ปิด' } : { bg:'#FFFFFF', border:BORDER, fg:'#FFFFFF', label:'·' })),
+      })),
+      counts: MONTHS.map((_, i) => {
+        const n = PERSON.timeline.filter(t => t.bars[i] > 0).length;
+        const over = n > PERSON.limit;
+        return { n, color: over ? RED : (n <= 1 ? BLU : INK), note: over ? 'เกินเกณฑ์' : (n <= 1 ? 'โฟกัสเดียว' : 'ในเกณฑ์') };
+      }),
+      loads: PERSON.loads.map(p => ({ pct:p, ...band(p), barW: Math.min(100, p * (100/120)) })),
+      pws: PERSON.pws,
+    };
+
+    return {
+      months: MONTHS,
+      isGrid: !isPerson, isPerson,
+      pageTitle: isPerson ? 'ภาระงานรายบุคคล · คุณซี' : 'ภาระงานรายบุคคล',
+      pageSub: isPerson ? 'มุมมองรายคน — ไทม์ไลน์โครงการ ส.ค. 2569 – ม.ค. 2570' : 'แผนก Interior · 3 Squad · 11 คน · คลิกชื่อคนเพื่อดูไทม์ไลน์รายโครงการ',
+      goBack: () => this.setState({ view:'grid' }),
+      squads, person,
+      useV1: () => this.setState({ cell:'v1' }),
+      useV2: () => this.setState({ cell:'v2' }),
+      v1Fg: v1 ? INK : SUB, v1Bg: v1 ? '#F2F1ED' : 'transparent', v1W: v1 ? 600 : 400,
+      v2Fg: v1 ? SUB : INK, v2Bg: v1 ? 'transparent' : '#F2F1ED', v2W: v1 ? 400 : 600,
+    };
+  }
+}
+</script>
+</body>
+</html>

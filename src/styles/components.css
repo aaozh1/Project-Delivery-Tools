@@ -1,0 +1,229 @@
+/*
+ * DPM component layer — คลาส .dpm-* ใช้ร่วมกันทุกหน้า
+ * กติกา: เส้น 1px แทนเงาทุกกรณี · ไม่มี gradient · hover ห้ามใช้เงา/ขยับตำแหน่ง
+ */
+
+/* ── ปุ่ม ──────────────────────────────────────────────── */
+.dpm-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: var(--dpm-h-btn-primary);
+  padding: 0 18px;
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: var(--dpm-radius-control);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background 150ms ease, border-color 150ms ease, color 150ms ease;
+  white-space: nowrap;
+}
+
+.dpm-btn--primary {
+  color: var(--dpm-bg);
+  background: var(--dpm-accent);
+  border-color: var(--dpm-accent);
+}
+.dpm-btn--primary:hover:not(:disabled) {
+  background: var(--dpm-ink);
+  border-color: var(--dpm-ink);
+}
+.dpm-btn--primary:active:not(:disabled) {
+  background: var(--dpm-accent-pressed);
+  border-color: var(--dpm-accent-pressed);
+  color: var(--dpm-border);
+}
+.dpm-btn--primary.is-loading {
+  background: var(--dpm-accent-loading);
+  border-color: var(--dpm-accent-loading);
+  color: #c7d2e0;
+  cursor: progress;
+}
+
+.dpm-btn--secondary {
+  height: var(--dpm-h-btn-secondary);
+  padding: 0 16px;
+  font-size: 12px;
+  color: var(--dpm-sub);
+  background: var(--dpm-surface);
+  border-color: var(--dpm-border);
+}
+.dpm-btn--secondary:hover:not(:disabled) {
+  color: var(--dpm-ink);
+  border-color: var(--dpm-ink);
+}
+.dpm-btn--secondary:active:not(:disabled) {
+  background: var(--dpm-hover);
+}
+
+.dpm-btn--danger {
+  color: var(--dpm-bg);
+  background: var(--dpm-red);
+  border-color: var(--dpm-red);
+}
+
+.dpm-btn:disabled {
+  color: var(--dpm-disabled);
+  background: var(--dpm-subtle);
+  border-color: var(--dpm-border);
+  cursor: not-allowed;
+}
+
+.dpm-btn:focus-visible {
+  outline: none;
+  border-color: var(--dpm-ink);
+}
+
+/* ── ช่องกรอกตัวเลขกลางประโยค ─────────────────────────── */
+.dpm-input {
+  height: var(--dpm-h-input);
+  width: 56px;
+  padding: 0 10px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+  color: var(--dpm-ink);
+  background: var(--dpm-surface);
+  border: 1px solid var(--dpm-border);
+  border-radius: var(--dpm-radius-control);
+  transition: border-color 400ms ease, background 150ms ease;
+}
+.dpm-input--wide {
+  width: 64px; /* ค่าทศนิยม */
+}
+.dpm-input:hover:not(:disabled) {
+  border-color: var(--dpm-ink);
+}
+.dpm-input:focus-visible {
+  outline: none;
+  border-color: var(--dpm-accent);
+}
+.dpm-input:disabled {
+  color: var(--dpm-disabled);
+  background: var(--dpm-subtle);
+  cursor: not-allowed;
+}
+.dpm-input.is-error {
+  color: var(--dpm-red);
+  background: var(--dpm-tint-red);
+  border-color: var(--dpm-red);
+}
+.dpm-input.is-warn {
+  border-color: var(--dpm-yellow);
+}
+
+/* ── การ์ด ─────────────────────────────────────────────── */
+.dpm-card {
+  background: var(--dpm-surface);
+  border: 1px solid var(--dpm-border);
+  border-radius: var(--dpm-radius-card);
+  overflow: hidden;
+}
+/* กล่องเน้นสูงสุด — ใช้ได้กล่องเดียวต่อหน้า */
+.dpm-card--critical {
+  border-color: var(--dpm-ink);
+}
+.dpm-card__header {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--dpm-border);
+}
+.dpm-card__title {
+  font-size: 15px;
+  font-weight: 600;
+}
+.dpm-card__hint {
+  font-size: 12px;
+  color: var(--dpm-sub);
+}
+.dpm-card__body {
+  padding: 16px 18px;
+}
+
+/* ── แถวตาราง ──────────────────────────────────────────── */
+.dpm-table-head {
+  background: var(--dpm-subtle);
+  border-bottom: 1px solid var(--dpm-border);
+  font-size: 12px;
+  color: var(--dpm-sub);
+}
+.dpm-table-row {
+  border-bottom: 1px solid var(--dpm-border);
+  background: var(--dpm-surface);
+  transition: background 150ms ease;
+}
+.dpm-table-row:hover {
+  background: var(--dpm-bg);
+}
+.dpm-table-row.is-critical {
+  background: var(--dpm-tint-red);
+}
+
+/* ── ชิป / pill ────────────────────────────────────────── */
+.dpm-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  padding: 6px 12px;
+  border-radius: var(--dpm-radius-pill);
+  color: var(--dpm-sub);
+  background: var(--dpm-surface);
+  border: 1px solid var(--dpm-border);
+  cursor: pointer;
+  transition: border-color 150ms ease, color 150ms ease, background 150ms ease;
+}
+.dpm-chip:hover {
+  border-color: var(--dpm-ink);
+  color: var(--dpm-ink);
+}
+.dpm-chip.is-selected {
+  color: var(--dpm-bg);
+  background: var(--dpm-ink);
+  border-color: var(--dpm-ink);
+}
+.dpm-chip.is-new {
+  color: var(--dpm-accent);
+  border-color: var(--dpm-accent);
+}
+.dpm-chip.is-addable {
+  color: var(--dpm-accent);
+  border-style: dashed;
+}
+.dpm-chip.is-disabled {
+  color: var(--dpm-disabled);
+  background: var(--dpm-subtle);
+  cursor: not-allowed;
+}
+.dpm-chip.is-empty {
+  color: var(--dpm-mute);
+  border-style: dashed;
+  cursor: default;
+}
+
+/* ── โค้ด/รหัสโครงการ ─────────────────────────────────── */
+.dpm-mono {
+  font-family: var(--dpm-font-mono);
+}
+
+/* ── skeleton loading ─────────────────────────────────── */
+.dpm-skeleton {
+  animation: dpmSkeleton 1.4s ease-in-out infinite;
+}
+.dpm-skeleton__block {
+  background: var(--dpm-subtle);
+  border-radius: var(--dpm-radius-badge);
+}
+
+/* ── จุด "สด / กำลังคำนวณ" ─────────────────────────────── */
+.dpm-live-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--dpm-green);
+  animation: dpmBreathe 2.6s ease-in-out infinite;
+}

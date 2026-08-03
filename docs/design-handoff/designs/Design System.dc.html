@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  body { margin:0; background:#FAFAF8; font-family:'IBM Plex Sans Thai', sans-serif; color:#1C1C1A; -webkit-font-smoothing:antialiased; font-variant-numeric:tabular-nums; }
+  a { color:#2B4C7E; text-decoration:none; }
+  a:hover { color:#1C1C1A; }
+  @keyframes dpmSkeleton { 0%,100% { opacity:0.5; } 50% { opacity:1; } }
+  @keyframes dpmBreathe { 0%,100% { opacity:0.25; } 50% { opacity:1; } }
+</style>
+</helmet>
+<div style="min-height:100vh; background:#FAFAF8;">
+
+  <div style="border-bottom:1px solid #E3E2DD;">
+    <div style="max-width:1280px; margin:0 auto; padding:22px 32px;">
+      <div style="display:flex; align-items:baseline; gap:10px;">
+        <span style="font-size:15px; font-weight:700; letter-spacing:0.14em;">DPM</span>
+        <span style="font-size:11px; color:#9A9A94;">Design Project Manager</span>
+      </div>
+      <h1 style="margin:10px 0 0; font-size:24px; font-weight:600; letter-spacing:-0.015em;">Design Token และชุด Component พื้นฐาน</h1>
+      <div style="margin-top:5px; font-size:13px; color:#6B6B66;">ค่าทุกค่าในหน้านี้คือค่าที่ใช้จริงในทั้ง 7 หน้าจอที่ออกแบบไว้ · ใช้เป็นแหล่งอ้างอิงเดียวตอนพัฒนา</div>
+    </div>
+  </div>
+
+  <div style="max-width:1280px; margin:0 auto; padding:28px 32px 100px; display:flex; flex-direction:column; gap:36px;">
+
+    <div>
+      <div style="display:flex; align-items:baseline; gap:12px; padding-bottom:10px; border-bottom:1px solid #1C1C1A; margin-bottom:18px;">
+        <span style="font-size:11px; color:#9A9A94; font-family:'IBM Plex Mono', monospace;">01</span>
+        <h2 style="margin:0; font-size:18px; font-weight:600;">สี</h2>
+        <span style="font-size:12px; color:#6B6B66;">19 ค่า · สีเน้นเดียว · สถานะ 4 ระดับ + พื้นจางของแต่ละสถานะ</span>
+      </div>
+
+      <sc-for list="{{ colorGroups }}" as="g" hint-placeholder-count="4">
+        <div style="margin-bottom:16px;">
+          <div style="font-size:12px; color:#9A9A94; margin-bottom:8px;">{{ g.title }}</div>
+          <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:10px;">
+            <sc-for list="{{ g.items }}" as="c" hint-placeholder-count="5">
+              <div style="border:1px solid #E3E2DD; border-radius:6px; background:#FFFFFF; overflow:hidden;">
+                <div style="height:56px; background:{{ c.hex }}; border-bottom:1px solid #E3E2DD;"></div>
+                <div style="padding:9px 12px;">
+                  <div style="font-family:'IBM Plex Mono', monospace; font-size:12px; font-weight:500;">{{ c.hex }}</div>
+                  <div style="margin-top:3px; font-size:11px; color:#6B6B66; line-height:1.45;">{{ c.use }}</div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+
+    <div>
+      <div style="display:flex; align-items:baseline; gap:12px; padding-bottom:10px; border-bottom:1px solid #1C1C1A; margin-bottom:18px;">
+        <span style="font-size:11px; color:#9A9A94; font-family:'IBM Plex Mono', monospace;">02</span>
+        <h2 style="margin:0; font-size:18px; font-weight:600;">ตัวอักษร</h2>
+        <span style="font-size:12px; color:#6B6B66;">IBM Plex Sans Thai · ตัวเลขเป็น tabular-nums ทุกที่ · IBM Plex Mono เฉพาะรหัสโครงการ</span>
+      </div>
+      <div style="border:1px solid #E3E2DD; border-radius:6px; background:#FFFFFF; overflow:hidden;">
+        <div style="display:grid; grid-template-columns:74px 74px minmax(0,1fr) 260px; background:#F2F1ED; border-bottom:1px solid #E3E2DD;">
+          <div style="padding:8px 14px; font-size:11px; color:#6B6B66;">ขนาด</div>
+          <div style="padding:8px 12px; font-size:11px; color:#6B6B66; border-left:1px solid #E3E2DD;">น้ำหนัก</div>
+          <div style="padding:8px 12px; font-size:11px; color:#6B6B66; border-left:1px solid #E3E2DD;">ตัวอย่าง</div>
+          <div style="padding:8px 12px; font-size:11px; color:#6B6B66; border-left:1px solid #E3E2DD;">ใช้ที่ไหน</div>
+        </div>
+        <sc-for list="{{ typeScale }}" as="t" hint-placeholder-count="12">
+          <div style="display:grid; grid-template-columns:74px 74px minmax(0,1fr) 260px; border-bottom:1px solid #E3E2DD; align-items:center;">
+            <div style="padding:10px 14px; font-family:'IBM Plex Mono', monospace; font-size:12px;">{{ t.size }}</div>
+            <div style="padding:10px 12px; font-family:'IBM Plex Mono', monospace; font-size:12px; color:#6B6B66; border-left:1px solid #E3E2DD;">{{ t.weight }}</div>
+            <div style="padding:10px 12px; border-left:1px solid #E3E2DD; overflow:hidden;">
+              <span style="font-size:{{ t.size }}px; font-weight:{{ t.weight }}; letter-spacing:{{ t.tracking }}; line-height:1.2; white-space:nowrap;">{{ t.sample }}</span>
+            </div>
+            <div style="padding:10px 12px; font-size:12px; color:#6B6B66; border-left:1px solid #E3E2DD; line-height:1.45;">{{ t.use }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <div>
+      <div style="display:flex; align-items:baseline; gap:12px; padding-bottom:10px; border-bottom:1px solid #1C1C1A; margin-bottom:18px;">
+        <span style="font-size:11px; color:#9A9A94; font-family:'IBM Plex Mono', monospace;">03</span>
+        <h2 style="margin:0; font-size:18px; font-weight:600;">ระยะห่าง มุมโค้ง ความสูง</h2>
+      </div>
+      <div style="display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:16px;">
+        <div style="border:1px solid #E3E2DD; border-radius:6px; background:#FFFFFF; overflow:hidden;">
+          <div style="padding:10px 14px; border-bottom:1px solid #E3E2DD; background:#F2F1ED; font-size:12px; font-weight:600;">ระยะห่าง · ฐาน 8px</div>
+          <sc-for list="{{ spacing }}" as="s" hint-placeholder-count="8">
+            <div style="display:grid; grid-template-columns:52px minmax(0,1fr) 90px; align-items:center; gap:10px; padding:7px 14px; border-bottom:1px solid #E3E2DD;">
+              <span style="font-family:'IBM Plex Mono', monospace; font-size:12px;">{{ s.px }}</span>
+              <span style="height:8px; background:#1C1C1A; border-radius:2px; width:{{ s.px }}px; display:block;"></span>
+              <span style="font-size:11px; color:#6B6B66; text-align:right;">{{ s.use }}</span>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="border:1px solid #E3E2DD; border-radius:6px; background:#FFFFFF; overflow:hidden;">
+          <div style="padding:10px 14px; border-bottom:1px solid #E3E2DD; background:#F2F1ED; font-size:12px; font-weight:600;">มุมโค้ง</div>
+          <sc-for list="{{ radii }}" as="r" hint-placeholder-count="5">
+            <div style="display:grid; grid-template-columns:52px 48px minmax(0,1fr); align-items:center; gap:10px; padding:9px 14px; border-bottom:1px solid #E3E2DD;">
+              <span style="font-family:'IBM Plex Mono', monospace; font-size:12px;">{{ r.px }}</span>
+              <span style="width:34px; height:26px; background:#F2F1ED; border:1px solid #E3E2DD; border-radius:{{ r.px }}px; display:block;"></span>
+              <span style="font-size:11px; color:#6B6B66; line-height:1.4;">{{ r.use }}</span>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="border:1px solid #E3E2DD; border-radius:6px; background:#FFFFFF; overflow:hidden;">
+          <div style="padding:10px 14px; border-bottom:1px solid #E3E2DD; background:#F2F1ED; font-size:12px; font-weight:600;">ความสูงแถวและปุ่ม</div>
+          <sc-for list="{{ heights }}" as="h" hint-placeholder-count="8">
+            <div style="display:grid; grid-template-columns:52px minmax(0,1fr); align-items:center; gap:10px; padding:8px 14px; border-bottom:1px solid #E3E2DD;">
+              <span style="font-family:'IBM Plex Mono', monospace; font-size:12px;">{{ h.px }}</span>
+              <span style="font-size:11px; color:#6B6B66; line-height:1.4;">{{ h.use }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div style="display:flex; align-items:baseline; gap:12px; padding-bottom:10px; border-bottom:1px solid #1C1C1A; margin-bottom:6px;">
+        <span style="font-size:11px; color:#9A9A94; font-family:'IBM Plex Mono', monospace;">04</span>
+        <h2 style="margin:0; font-size:18px; font-weight:600;">ชุด Component</h2>
+        <span style="font-size:12px; color:#6B6B66;">แต่ละตัวแสดงทุกสถานะที่เป็นไปได้ · ตัวที่มีคำว่า “กดได้จริง” ลองคลิกได้</span>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:20px; margin-top:18px;">
+
+        <div style="border:1px solid #E3E2DD; border-radius:6px; background:#FFFFFF; overflow:hidden;">
+          <div style="padding:12px 18px; border-bottom:1px solid #E3E2DD; display:flex; align-items:baseline; gap:10px;">
+            <span style="font-size:15px; font-weight:600;">ช่องจัดสรรคน-สัปดาห์</span>
+            <span style="font-size:12px; color:#6B6B66;">ค่าที่เลือกได้ 0.25 / 0.50 / 0.75 / 1.00 · หนึ่งก้อน = 0.25 · คลิกเดียวจบ</span>
+          </div>
+          <div style="padding:16px 18px; display:grid; grid-template-columns:repeat(auto-fill, minmax(216px, 1fr)); gap:16px;">
+            <sc-for list="{{ allocStates }}" as="a" hint-placeholder-count="8">
+              <div>
+                <div style="font-size:11px; color:#9A9A94; margin-bottom:7px;">{{ a.state }}</div>
+                <div style="display:flex; align-items:center; gap:10px; height:38px; padding:0 8px; border-radius:4px; background:{{ a.wrapBg }}; border:1px solid {{ a.wrapBorder }};">
+                  <div style="display:flex; gap:2px;">
+                    <sc-for list="{{ a.quarters }}" as="q" hint-placeholder-count="4">
+                      <span style="width:20px; height:24px; border-radius:2px; display:block; background:{{ q.bg }}; border:1px {{ q.style }} {{ q.border }}; cursor:{{ a.cursor }};" onClick="{{ q.set }}"></span>
+                    </sc-for>
+                  </div>
+                  <span style="font-size:13px; font-weight:600; color:{{ a.valueColor }};">{{ a.value }}</span>
+                </div>
+                <div style="margin-top:6px; font-size:11px; color:{{ a.noteColor }}; line-height:1.45;">{{ a.note }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="border:1px solid #E3E2DD; border-radius:6px; background:#FFFFFF; overflow:hidden;">
+          <div style="padding:12px 18px; border-bottom:1px solid #E3E2DD; display:flex; align-items:baseline; gap:10px;">
+            <span style="font-size:15px; font-weight:600;">ช่องภาระงาน</span>
+            <span style="font-size:12px; color:#6B6B66;">จำนวนโครงการ + % โหลด ในช่องเดียว · จุด = โครงการ · จุดแดง = เกินเกณฑ์ตำแหน่ง</span>
+          </div>
+          <div style="padding:16px 18px; display:grid; grid-template-columns:repeat(auto-fill, minmax(168px, 1fr)); gap:14px;">
+            <sc-for list="{{ loadCells }}" as="l" hint-placeholder-count="7">
+              <div>
+                <div style="font-size:11px; color:#9A9A94; margin-bottom:7px;">{{ l.state }}</div>
+                <div style="border:1px solid #E3E2DD; border-radius:4px; padding:10px 12px; background:{{ l.bg }}; min-height:74px;">
+                  <sc-if value="{{ l.isData }}" hint-placeholder-val="{{ true }}">
+                    <div>
+                      <div style="display:flex; align-items:baseline; gap:6px;">
+                        <span style="font-size:9px; color:{{ l.color }};">{{ l.mark }}</span>
+                        <span style="font-size:17px; font-weight:600; color:{{ l.color }}; line-height:1.1;">{{ l.pct }}</span>
+                      </div>
+                      <div style="margin-top:5px; height:4px; background:#F2F1ED; border-radius:2px; position:relative;">
+                        <div style="position:absolute; left:0; top:0; bottom:0; width:{{ l.barW }}%; background:{{ l.color }}; border-radius:2px;"></div>
+                        <div style="position:absolute; left:83.3%; top:-2px; bottom:-2px; width:1px; background:#9A9A94;"></div>
+                      </div>
+                      <div style="margin-top:6px; display:flex; align-items:center; gap:4px;">
+                        <sc-for list="{{ l.pips }}" as="p" hint-placeholder-count="2">
+                          <span style="width:7px; height:7px; border-radius:50%; display:block; background:{{ p.bg }}; border:1px solid {{ p.border }};"></span>
+                        </sc-for>
+                        <span style="font-size:11px; color:{{ l.countColor }}; margin-left:2px;">{{ l.countText }}</span>
+                      </div>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ l.isSkeleton }}" hint-placeholder-val="{{ false }}">
+                    <div style="animation:dpmSkeleton 1.4s ease-in-out infinite;">
+                      <div style="width:52px; height:16px; background:#F2F1ED; border-radius:3px;"></div>
+                      <div style="margin-top:7px; width:100%; height:4px; background:#F2F1ED; border-radius:2px;"></div>
+                      <div style="margin-top:9px; width:64px; height:8px; background:#F2F1ED; border-radius:3px;"></div>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ l.isEmpty }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex; flex-direction:column; justify-content:center; min-height:52px;">
+                      <div style="font-size:13px; color:#9A9A94;">ยังไม่มีการจัดสรร</div>
+                      <div style="margin-top:4px; font-size:11px; color:#2B4C7E; cursor:pointer;">จัดสรรกำลังคน</div>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ l.isLocked }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex; align-items:center; gap:9px; min-height:52px;">
+                      <span style="width:14px; flex-shrink:0; display:block;">
+                        <span style="display:block; width:8px; height:5px; margin:0 auto; border:1.5px solid #9A9A94; border-bottom:none; border-radius:4px 4px 0 0;"></span>
+                        <span style="display:block; width:14px; height:9px; background:#9A9A94; border-radius:2px;"></span>
+                      </span>
+                      <span style="font-size:11px; color:#6B6B66; line-height:1.45;">เห็นได้เฉพาะแผนกเจ้าของข้อมูล</span>
+                    </div>
+                  </sc-if>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:20px; align-items:start;">
+          <div style="border:1px solid #E3E2DD; border-radius:6px; background:#FFFFFF; overflow:hidden;">
+            <div style="padding:12px 18px; border-bottom:1px solid #E3E2DD; font-size:15px; font-weight:600;">แถบสมดุล Squad</div>
+            <div style="padding:16px 18px; display:flex; flex-direction:column; gap:14px;">
+              <sc-for list="{{ squadBars }}" as="s" hint-placeholder-count="4">
+                <div>
+                  <div style="display:flex; align-items:baseline; justify-content:space-between; margin-bottom:6px;">
+                    <span style="font-size:13px; font-weight:500;">{{ s.name }}</span>
+                    <span style="font-size:13px; display:inline-flex; align-items:center; gap:6px; color:{{ s.color }};"><span style="font-size:9px;">{{ s.mark }}</span><b style="font-weight:600;">{{ s.pct }}%</b><span style="color:#9A9A94; font-weight:400;">{{ s.label }}</span></span>
+                  </div>
+                  <div style="position:relative; height:8px; background:#F2F1ED; border-radius:2px;">
+                    <div style="position:absolute; left:0; top:0; bottom:0; width:{{ s.barW }}%; background:{{ s.color }}; border-radius:2px;"></div>
+                    <div style="position:absolute; left:83.3%; top:-4px; bottom:-4px; width:1px; background:#1C1C1A;"></div>
+                  </div>
+                </div>
+              </sc-for>
+              <div style="font-size:11px; color:#9A9A94;">เส้นดำ = ระดับ 100% · แถบยาวเกินเส้นคือรับงานเกินกำลัง</div>
+            </div>
+          </div>
+
+          <div style="border:1px solid #E3E2DD; border-radius:6px; background:#FFFFFF; overflow:hidden;">
+            <div style="padding:12px 18px; border-bottom:1px solid #E3E2DD; font-size:15px; font-weight:600;">แถบซ้อนสองชั้น · ใช้ไป เทียบ คืบหน้า</div>
+            <div style="padding:16px 18px; display:flex; flex-direction:column; gap:16px;">
+              <sc-for list="{{ dualBars }}" as="d" hint-placeholder-count="3">
+                <div>
+                  <div style="font-size:11px; color:#9A9A94; margin-bottom:7px;">{{ d.state }}</div>
+                  <div style="display:flex; align-items:center; gap:8px;">
+                    <div style="position:relative; flex:1; height:7px; background:#F2F1ED; border-radius:2px;">
+                      <div style="position:absolute; left:0; top:0; bottom:0; width:{{ d.progW }}%; background:#1C1C1A; border-radius:2px;"></div>
+                    </div>
+                    <span style="font-size:11px; color:#6B6B66; width:36px; text-align:right;">{{ d.prog }}%</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:8px; margin-top:3px;">
+                    <div style="position:relative; flex:1; height:7px; background:#F2F1ED; border-radius:2px;">
+                      <div style="position:absolute; left:0; top:0; bottom:0; width:{{ d.usedW }}%; background:{{ d.color }}; border-radius:2px;"></div>
+                      <div style="position:absolute; left:{{ d.progW }}%; top:-3px; bottom:-3px; width:1px; background:#1C1C1A;"></div>
+                    </div>
+                    <span style="font-size:11px; width:36px; text-align:right; color:{{ d.color }}; font-weight:600;">{{ d.used }}%</span>
+                  </div>
+                  <div style="margin-top:5px; font-size:11px; color:{{ d.noteColor }};">{{ d.note }}</div>
+                </div>
+              </sc-for>
+              <div style="font-size:11px; color:#9A9A94; line-height:1.5;">ชั้นบน = ความคืบหน้างาน · ชั้นล่าง = คน-สัปดาห์ที่ใช้ · ขีดตั้งบนชั้นล่างคือตำแหน่งของความคืบหน้า</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="border:1px solid #E3E2DD; border-radius:6px; background:#FFFFFF; overflow:hidden;">
+          <div style="padding:12px 18px; border-bottom:1px solid #E3E2DD; display:flex; align-items:baseline; gap:10px;">
+            <span style="font-size:15px; font-weight:600;">ป้ายสถานะงวดงาน 6 ขั้น</span>
+            <span style="font-size:12px; color:#6B6B66;">เดินหน้าทางเดียว · ขั้นที่ยังไม่ถึงเป็นเส้นประ</span>
+          </div>
+          <div style="padding:16px 18px;">
+            <div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px;">
+              <sc-for list="{{ phaseStates }}" as="p" hint-placeholder-count="6">
+                <span style="display:inline-flex; align-items:center; gap:7px; font-size:13px; padding:7px 13px; border-radius:4px; color:{{ p.fg }}; background:{{ p.bg }}; border:1px {{ p.borderStyle }} {{ p.border }};">
+                  <span style="font-size:9px;">{{ p.mark }}</span>{{ p.label }}
+                </span>
+              </sc-for>
+            </div>
+            <div style="display:flex; align-items:center; gap:0;">
+              <sc-for list="{{ phaseTrack }}" as="s" hint-placeholder-count="6">
+                <div style="flex:1; display:flex; flex-direction:column; gap:6px;">
+                  <div style="height:6px; background:{{ s.trackBg }}; border-radius:2px; margin-right:3px;"></div>
+                  <span style="font-size:11px; color:{{ s.fg }};">{{ s.label }}</span>
+                </div>
+              </sc-for>
+            </div>
+            <div style="margin-top:10px; font-size:11px; color:#9A9A94;">ตัวอย่างงวด 3 ของ ID-2026-004: เดินมาถึง “อนุมัติแล้ว” · ค้างรอวางบิล 12 วัน</div>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:20px; align-items:start;">
+          <div style="border:1px solid #E3E2DD; border-radius:6px; background:#FFFFFF; overflow:hidden;">
+            <div style="padding:12px 18px; border-bottom:1px solid #E3E2DD; display:flex; align-items:baseline; gap:10px;">
+              <span style="font-size:15px; font-weight:600;">ป้ายความเสี่ยง 4 ระดับ</span>
+              <span style="font-size:12px; color:#6B6B66;">สี + สัญลักษณ์ + คำ</span>
+            </div>
+            <div style="padding:16px 18px;">
+              <div style="display:flex; flex-direction:column; gap:9px;">
+                <sc-for list="{{ riskBadges }}" as="r" hint-placeholder-count="4">
+                  <div style="display:grid; grid-template-columns:120px 92px minmax(0,1fr); align-items:center; gap:12px;">
+                    <span style="display:inline-flex; align-items:center; gap:7px; font-size:13px; font-weight:600; color:{{ r.color }};"><span style="font-size:10px;">{{ r.mark }}</span>{{ r.label }}</span>
+                    <span style="font-family:'IBM Plex Mono', monospace; font-size:11px; color:#6B6B66;">{{ r.hex }}</span>
+                    <span style="font-size:12px; color:#6B6B66;">{{ r.rule }}</span>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="margin-top:14px; padding-top:12px; border-top:1px solid #E3E2DD; font-size:11px; color:#9A9A94; line-height:1.55;">ห้ามใช้สีอย่างเดียวสื่อสถานะ — ผู้ชายไทยราว 8% ตาบอดสี ทุกป้ายจึงมีสัญลักษณ์ต่างรูปกำกับ และอ่านได้เมื่อพิมพ์ขาวดำ</div>
+            </div>
+          </div>
+
+          <div style="border:1px solid #E3E2DD; border-radius:6px; background:#FFFFFF; overflow:hidden;">
+            <div style="padding:12px 18px; border-bottom:1px solid #E3E2DD; font-size:15px; font-weight:600;">การแสดงจำนวนเงิน</div>
+            <div style="padding:16px 18px;">
+              <div style="display:flex; flex-direction:column; gap:11px;">
+                <sc-for list="{{ money }}" as="m" hint-placeholder-count="6">
+                  <div style="display:grid; grid-template-columns:150px minmax(0,1fr); align-items:baseline; gap:14px;">
+                    <span style="font-size:{{ m.size }}px; font-weight:600; color:{{ m.color }};">{{ m.text }}</span>
+                    <span style="font-size:12px; color:#6B6B66; line-height:1.45;">{{ m.use }}</span>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="margin-top:14px; padding-top:12px; border-top:1px solid #E3E2DD; font-size:11px; color:#9A9A94; line-height:1.55;">ใช้ − (ขีดยาว) ไม่ใช่วงเล็บ · ย่อ M/K เฉพาะที่พื้นที่จำกัดหรือเป็นตัวเลขระดับผู้บริหาร · ในตารางที่ต้องบวกเลขได้ด้วยตาให้แสดงเต็มจำนวน</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="border:1px solid #E3E2DD; border-radius:6px; background:#FFFFFF; overflow:hidden;">
+          <div style="padding:12px 18px; border-bottom:1px solid #E3E2DD; display:flex; align-items:baseline; gap:10px;">
+            <span style="font-size:15px; font-weight:600;">แถบข้อจำกัดพร้อมทางออก</span>
+            <span style="font-size:12px; color:#6B6B66;">ทุกที่ที่บอกว่า “ทำไม่ได้” ต้องบอกด้วยว่า “ต้องทำอย่างไร”</span>
+          </div>
+          <div style="padding:16px 18px; display:flex; flex-direction:column; gap:14px;">
+            <sc-for list="{{ constraints }}" as="c" hint-placeholder-count="3">
+              <div>
+                <div style="font-size:11px; color:#9A9A94; margin-bottom:7px;">{{ c.state }}</div>
+                <div style="display:flex; align-items:center; justify-content:space-between; gap:16px; padding:11px 14px; border:1px solid {{ c.border }}; border-radius:6px; background:{{ c.bg }};">
+                  <div style="display:flex; align-items:center; gap:11px; min-width:0;">
+                    <span style="width:14px; flex-shrink:0; display:block;">
+                      <span style="display:block; width:8px; height:5px; margin:0 auto; border:1.5px solid {{ c.lockColor }}; border-bottom:none; border-radius:4px 4px 0 0;"></span>
+                      <span style="display:block; width:14px; height:9px; background:{{ c.lockColor }}; border-radius:2px;"></span>
+                    </span>
+                    <div>
+                      <div style="font-size:13px; line-height:1.5; color:{{ c.fg }};">{{ c.text }}</div>
+                      <div style="margin-top:2px; font-size:12px; color:#6B6B66; line-height:1.5;">{{ c.how }}</div>
+                    </div>
+                  </div>
+                  <span style="font-size:12px; white-space:nowrap; border-radius:4px; padding:7px 14px; cursor:{{ c.cursor }}; color:{{ c.btnFg }}; background:{{ c.btnBg }}; border:1px solid {{ c.btnBorder }};">{{ c.cta }}</span>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:minmax(0,1.3fr) minmax(0,1fr); gap:20px; align-items:start;">
+          <div style="border:1px solid #E3E2DD; border-radius:6px; background:#FFFFFF; overflow:hidden;">
+            <div style="padding:12px 18px; border-bottom:1px solid #E3E2DD; font-size:15px; font-weight:600;">การ์ดคำขอ</div>
+            <div style="padding:16px 18px; display:flex; flex-direction:column; gap:16px;">
+              <sc-for list="{{ requests }}" as="q" hint-placeholder-count="4">
+                <div>
+                  <div style="font-size:11px; color:#9A9A94; margin-bottom:7px;">{{ q.state }}</div>
+                  <div style="border:1px solid {{ q.border }}; border-radius:6px; background:{{ q.bg }}; padding:13px 15px;">
+                    <div style="display:flex; align-items:center; gap:9px;">
+                      <span style="width:22px; height:22px; border-radius:3px; display:inline-flex; align-items:center; justify-content:center; font-size:12px; background:{{ q.iconBg }}; border:1px solid {{ q.iconBorder }}; color:{{ q.iconFg }};">{{ q.glyph }}</span>
+                      <span style="font-size:12px; font-weight:600; color:{{ q.kindFg }};">{{ q.kind }}</span>
+                      <span style="flex:1;"></span>
+                      <span style="font-size:11px; color:#9A9A94;">{{ q.age }}</span>
+                    </div>
+                    <div style="margin-top:9px; font-size:14px; line-height:1.55; color:{{ q.fg }};">{{ q.body }}</div>
+                    <div style="margin-top:4px; font-size:12px; color:#6B6B66; line-height:1.55;">{{ q.reason }}</div>
+                    <div style="margin-top:11px; display:flex; align-items:center; gap:8px;">
+                      <span style="font-size:12px; border-radius:4px; padding:7px 16px; cursor:{{ q.cursor }}; color:{{ q.okFg }}; background:{{ q.okBg }}; border:1px solid {{ q.okBorder }};">{{ q.okLabel }}</span>
+                      <span style="font-size:12px; border-radius:4px; padding:6px 16px; cursor:{{ q.cursor }}; color:{{ q.noFg }}; border:1px solid {{ q.noBorder }}; background:#FFFFFF;">ปฏิเสธ</span>
+                      <span style="font-size:11px; color:#9A9A94; margin-left:2px;">{{ q.impact }}</span>
+                    </div>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:20px;">
+            <div style="border:1px solid #E3E2DD; border-radius:6px; background:#FFFFFF; overflow:hidden;">
+              <div style="padding:12px 18px; border-bottom:1px solid #E3E2DD; font-size:15px; font-weight:600;">แท็กทักษะ</div>
+              <div style="padding:16px 18px; display:flex; flex-direction:column; gap:14px;">
+                <sc-for list="{{ skillTagRows }}" as="row" hint-placeholder-count="4">
+                  <div>
+                    <div style="font-size:11px; color:#9A9A94; margin-bottom:7px;">{{ row.state }}</div>
+                    <div style="display:flex; flex-wrap:wrap; gap:6px; align-items:center;">
+                      <sc-for list="{{ row.tags }}" as="t" hint-placeholder-count="3">
+                        <span style="display:inline-flex; align-items:center; gap:6px; font-size:12px; padding:6px 12px; border-radius:20px; color:{{ t.fg }}; background:{{ t.bg }}; border:1px {{ t.borderStyle }} {{ t.border }}; cursor:{{ row.cursor }};">{{ t.label }}<span style="font-size:10px; color:{{ t.badgeFg }}; display:{{ t.badgeDisplay }};">{{ t.badge }}</span></span>
+                      </sc-for>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+
+            <div style="border:1px solid #E3E2DD; border-radius:6px; background:#FFFFFF; overflow:hidden;">
+              <div style="padding:12px 18px; border-bottom:1px solid #E3E2DD; font-size:15px; font-weight:600;">ตัวนับรอบแก้แบบ</div>
+              <div style="padding:16px 18px; display:flex; flex-direction:column; gap:14px;">
+                <sc-for list="{{ revisions }}" as="r" hint-placeholder-count="4">
+                  <div>
+                    <div style="font-size:11px; color:#9A9A94; margin-bottom:7px;">{{ r.state }}</div>
+                    <div style="display:flex; align-items:center; gap:11px;">
+                      <div style="display:flex; gap:3px;">
+                        <sc-for list="{{ r.pips }}" as="p" hint-placeholder-count="3">
+                          <span style="width:22px; height:8px; border-radius:2px; display:block; background:{{ p.bg }}; border:1px {{ p.style }} {{ p.border }};"></span>
+                        </sc-for>
+                      </div>
+                      <span style="font-size:13px; font-weight:600; color:{{ r.color }};">{{ r.text }}</span>
+                    </div>
+                    <div style="margin-top:5px; font-size:11px; color:{{ r.noteColor }}; line-height:1.45;">{{ r.note }}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="border:1px solid #1C1C1A; border-radius:6px; background:#FFFFFF; overflow:hidden;">
+          <div style="padding:12px 18px; border-bottom:1px solid #E3E2DD; display:flex; align-items:baseline; gap:10px;">
+            <span style="font-size:15px; font-weight:600;">สถานะ “ไม่มีสิทธิ์เข้าถึง”</span>
+            <span style="font-size:12px; color:#6B6B66;">ต้องไม่ดูเหมือนข้อผิดพลาด — บอกเหตุผลและบอกว่าติดต่อใคร</span>
+          </div>
+          <div style="padding:18px; display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); gap:16px;">
+            <div>
+              <div style="font-size:11px; color:#9A9A94; margin-bottom:7px;">ระดับช่องข้อมูล · ตัวเลขถูกปิด</div>
+              <div style="border:1px solid #E3E2DD; border-radius:6px; background:#FAFAF8; padding:14px 16px;">
+                <div style="font-size:12px; color:#6B6B66;">เรตกลาง Senior / คน-สัปดาห์</div>
+                <div style="margin-top:5px; display:flex; align-items:center; gap:10px;">
+                  <span style="font-size:19px; font-weight:600; color:#9A9A94; letter-spacing:0.08em;">••••••</span>
+                  <span style="font-size:11px; color:#6B6B66; border:1px solid #E3E2DD; background:#FFFFFF; border-radius:4px; padding:4px 10px; cursor:pointer;">เปิดดู</span>
+                </div>
+                <div style="margin-top:8px; font-size:11px; color:#6B6B66; line-height:1.5;">การเปิดดูจะถูกบันทึกลง Audit Log</div>
+              </div>
+            </div>
+
+            <div>
+              <div style="font-size:11px; color:#9A9A94; margin-bottom:7px;">ระดับบล็อก · แทนที่เนื้อหาทั้งกล่อง</div>
+              <div style="border:1px solid #E3E2DD; border-radius:6px; background:#F2F1ED; padding:16px; display:flex; align-items:flex-start; gap:12px;">
+                <span style="width:18px; flex-shrink:0; display:block; padding-top:2px;">
+                  <span style="display:block; width:11px; height:6px; margin:0 auto; border:1.5px solid #6B6B66; border-bottom:none; border-radius:5px 5px 0 0;"></span>
+                  <span style="display:block; width:18px; height:12px; background:#6B6B66; border-radius:2px;"></span>
+                </span>
+                <div>
+                  <div style="font-size:14px; font-weight:600;">ข้อมูลนี้จำกัดสิทธิ์</div>
+                  <div style="margin-top:5px; font-size:12px; color:#6B6B66; line-height:1.6;">ตัวเลขต้นทุนค่าแรงเปิดให้เฉพาะ Head of Project Delivery และฝ่ายบุคคล — ไม่ใช่ข้อผิดพลาด และไม่ต้องแจ้งฝ่ายไอที</div>
+                  <div style="margin-top:10px; display:flex; align-items:center; gap:10px;">
+                    <span style="font-size:12px; color:#FAFAF8; background:#2B4C7E; border-radius:4px; padding:7px 14px; cursor:pointer;" style-hover="background:#1C1C1A;">ขอสิทธิ์เข้าถึง</span>
+                    <span style="font-size:11px; color:#6B6B66;">ติดต่อ คุณณัฐพงศ์ (HoPD)</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <div style="font-size:11px; color:#9A9A94; margin-bottom:7px;">ระดับปุ่ม · กดไม่ได้แต่บอกทางออก</div>
+              <div style="border:1px solid #E3E2DD; border-radius:6px; background:#FAFAF8; padding:16px;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                  <span style="font-size:13px; color:#C9C8C3; background:#F2F1ED; border:1px solid #E3E2DD; border-radius:4px; padding:8px 16px; cursor:not-allowed;">ย้ายคนข้าม Squad</span>
+                  <span style="width:14px; flex-shrink:0; display:block;">
+                    <span style="display:block; width:8px; height:5px; margin:0 auto; border:1.5px solid #9A9A94; border-bottom:none; border-radius:4px 4px 0 0;"></span>
+                    <span style="display:block; width:14px; height:9px; background:#9A9A94; border-radius:2px;"></span>
+                  </span>
+                </div>
+                <div style="margin-top:9px; font-size:12px; color:#6B6B66; line-height:1.6;">หัวหน้า Squad ย้ายคนข้าม Squad ไม่ได้ตามกติกา — ส่งคำขอให้หัวหน้าแผนกอนุมัติแทน</div>
+                <div style="margin-top:9px;"><span style="font-size:12px; color:#2B4C7E; cursor:pointer;" style-hover="color:#1C1C1A;">ส่งคำขอถึงหัวหน้าแผนก →</span></div>
+              </div>
+            </div>
+
+            <div>
+              <div style="font-size:11px; color:#9A9A94; margin-bottom:7px;">เทียบกับสถานะผิดพลาดจริง (ไม่ใช่เรื่องสิทธิ์)</div>
+              <div style="border:1px solid #B33A3A; border-radius:6px; background:#FFFFFF; padding:16px; display:flex; align-items:flex-start; gap:11px;">
+                <span style="font-size:10px; color:#B33A3A; padding-top:3px;">▲</span>
+                <div>
+                  <div style="font-size:14px; font-weight:600; color:#B33A3A;">โหลดข้อมูลไม่สำเร็จ</div>
+                  <div style="margin-top:5px; font-size:12px; color:#6B6B66; line-height:1.6;">ลองใหม่อีกครั้ง ถ้ายังไม่ได้ให้แจ้งฝ่ายไอที · รหัสอ้างอิง DPM-5031</div>
+                  <div style="margin-top:10px;"><span style="font-size:12px; color:#FAFAF8; background:#B33A3A; border-radius:4px; padding:7px 14px; cursor:pointer;">ลองใหม่</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div style="padding:13px 18px; border-top:1px solid #E3E2DD; background:#F2F1ED; font-size:11px; color:#6B6B66; line-height:1.6;">กติกาการเขียน: สถานะจำกัดสิทธิ์ใช้พื้นเทากลางและตัวอักษรสีปกติ ไม่ใช้แดง · ห้ามใช้คำว่า “ผิดพลาด” “ไม่ได้รับอนุญาต” หรือ “Forbidden” · ต้องระบุตำแหน่งของคนที่ติดต่อได้เสมอ ไม่ใช่แค่ “ผู้ดูแลระบบ”</div>
+        </div>
+
+        <div style="border:1px solid #E3E2DD; border-radius:6px; background:#FFFFFF; overflow:hidden;">
+          <div style="padding:12px 18px; border-bottom:1px solid #E3E2DD; font-size:15px; font-weight:600;">ปุ่มและช่องกรอก · ทุกสถานะ</div>
+          <div style="padding:16px 18px; display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:16px;">
+            <sc-for list="{{ buttons }}" as="b" hint-placeholder-count="8">
+              <div>
+                <div style="font-size:11px; color:#9A9A94; margin-bottom:7px;">{{ b.state }}</div>
+                <div style="display:flex; flex-direction:column; gap:8px;">
+                  <span style="display:inline-flex; align-items:center; justify-content:center; gap:8px; height:38px; font-size:13px; font-weight:500; border-radius:4px; padding:0 18px; cursor:{{ b.cursor }}; color:{{ b.priFg }}; background:{{ b.priBg }}; border:1px solid {{ b.priBorder }};">{{ b.priLabel }}</span>
+                  <span style="display:inline-flex; align-items:center; justify-content:center; height:34px; font-size:12px; border-radius:4px; padding:0 16px; cursor:{{ b.cursor }}; color:{{ b.secFg }}; background:{{ b.secBg }}; border:1px solid {{ b.secBorder }};">{{ b.secLabel }}</span>
+                  <div style="display:flex; align-items:center; gap:8px; height:30px; padding:0 10px; border-radius:4px; background:{{ b.inputBg }}; border:1px solid {{ b.inputBorder }};">
+                    <span style="font-size:13px; font-weight:600; color:{{ b.inputFg }};">{{ b.inputVal }}</span>
+                  </div>
+                  <div style="font-size:11px; color:{{ b.hintColor }}; line-height:1.45;">{{ b.hint }}</div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:1400}}">
+const INK='#1C1C1A', SUB='#6B6B66', MUTE='#9A9A94', DIS='#C9C8C3', BORDER='#E3E2DD', SUBTLE='#F2F1ED', HOVER='#E8E7E2', BG='#FAFAF8', WHITE='#FFFFFF';
+const ACCENT='#2B4C7E', GRN='#2F7A4F', YEL='#C79A2E', RED='#B33A3A', BLU='#5B7C99';
+const TRED='#FBF1F1', TYEL='#FBF6EA', TGRN='#F3F7F3', TBLU='#F1F4F7', AMBER='#8A6E1F';
+
+class Component extends DCLogic {
+  state = { alloc: 0.50 };
+
+  quarters(v, mode) {
+    // mode: normal | hover | active | disabled | error | loading
+    return [1,2,3,4].map(q => {
+      const filled = v >= q * 0.25 - 0.0001;
+      if (mode === 'disabled') return { bg: filled ? DIS : SUBTLE, border: filled ? DIS : BORDER, style:'solid', set: null };
+      if (mode === 'error') return { bg: filled ? RED : WHITE, border: RED, style:'solid', set: null };
+      if (mode === 'loading') return { bg: SUBTLE, border: BORDER, style:'solid', set: null };
+      if (mode === 'empty') return { bg: WHITE, border: BORDER, style:'dashed', set: null };
+      if (mode === 'hover') return { bg: filled ? INK : WHITE, border: INK, style:'solid', set: null };
+      if (mode === 'active') return { bg: filled ? INK : HOVER, border: INK, style:'solid', set: null };
+      return { bg: filled ? INK : WHITE, border: filled ? INK : BORDER, style:'solid', set: null };
+    });
+  }
+
+  renderVals() {
+    const live = this.state.alloc;
+    const liveQ = [1,2,3,4].map(q => {
+      const filled = live >= q * 0.25 - 0.0001;
+      return {
+        bg: filled ? INK : WHITE, border: filled ? INK : BORDER, style:'solid',
+        set: () => this.setState(s => ({ alloc: Math.abs(s.alloc - q * 0.25) < 0.001 ? 0 : q * 0.25 })),
+      };
+    });
+
+    const pips = (n, limit) => Array.from({ length: Math.max(n, limit) }, (_, k) => {
+      const active = k < n, beyond = k >= limit;
+      return { bg: active ? (beyond ? RED : INK) : WHITE, border: active ? (beyond ? RED : INK) : BORDER };
+    });
+
+    return {
+      colorGroups: [
+        { title:'พื้นหลังและเส้น', items:[
+          { hex:'#FAFAF8', use:'พื้นหลังหลักของทุกหน้า' },
+          { hex:'#FFFFFF', use:'พื้นการ์ดและแถวตาราง' },
+          { hex:'#F2F1ED', use:'พื้นรอง · แถบด้านข้าง · หัวตาราง' },
+          { hex:'#E8E7E2', use:'พื้นตอนชี้เมาส์บนพื้นรอง' },
+          { hex:'#E3E2DD', use:'เส้นกรอบ 1px ทุกเส้น' },
+        ]},
+        { title:'ตัวอักษร', items:[
+          { hex:'#1C1C1A', use:'ตัวอักษรหลัก · ตัวเลขสำคัญ' },
+          { hex:'#6B6B66', use:'ตัวอักษรรอง · คำอธิบาย' },
+          { hex:'#9A9A94', use:'ตัวอักษรจาง · label เล็ก' },
+          { hex:'#C9C8C3', use:'ตัวอักษรสถานะปิดใช้งาน' },
+        ]},
+        { title:'สีเน้น (เดียว) และสถานะ', items:[
+          { hex:'#2B4C7E', use:'สีเน้นเดียวของระบบ · ปุ่มหลัก ลิงก์' },
+          { hex:'#2F7A4F', use:'เขียว ปกติ · สัญลักษณ์ ●' },
+          { hex:'#C79A2E', use:'เหลือง เตือน · สัญลักษณ์ ◆' },
+          { hex:'#B33A3A', use:'แดง วิกฤต · สัญลักษณ์ ▲' },
+          { hex:'#5B7C99', use:'น้ำเงิน โหลดต่ำ · สัญลักษณ์ ○' },
+          { hex:'#8A6E1F', use:'ตัวอักษรบนพื้นเหลืองจาง (แถบยังไม่บันทึก)' },
+        ]},
+        { title:'พื้นจางของสถานะ · ใช้เฉพาะแถวหรือช่องที่ต้องเน้น', items:[
+          { hex:'#FBF1F1', use:'พื้นแถววิกฤต' },
+          { hex:'#FBF6EA', use:'พื้นแถบเตือน · แถบยังไม่บันทึก' },
+          { hex:'#F3F7F3', use:'พื้นช่องสถานะปกติ (โหมดสแกน)' },
+          { hex:'#F1F4F7', use:'พื้นช่องโหลดต่ำ (โหมดสแกน)' },
+        ]},
+      ],
+
+      typeScale: [
+        { size:40, weight:600, tracking:'-0.02em', sample:'฿622,000', use:'Margin ตัวเลขพระเอกในแผงคำนวณ' },
+        { size:34, weight:600, tracking:'-0.02em', sample:'฿48.2M', use:'ตัวเลข KPI แถบบนสุด (อ่านจากระยะ 2 ม.)' },
+        { size:30, weight:600, tracking:'-0.01em', sample:'44', use:'ตัวเลขสรุปในการ์ด' },
+        { size:24, weight:600, tracking:'-0.015em', sample:'คุณซี', use:'ชื่อในหัวหน้า Growth Profile' },
+        { size:22, weight:600, tracking:'-0.01em', sample:'Portfolio Control Room', use:'ชื่อหน้า (H1)' },
+        { size:20, weight:600, tracking:'-0.01em', sample:'จัดสรรกำลังคน — Squad A', use:'ชื่อหน้าในแถบนำทาง · ตัวเลขรวมในแถว' },
+        { size:18, weight:600, tracking:'0', sample:'ประสบการณ์ที่ผ่านมา', use:'หัวข้อบล็อกใหญ่ · % ในช่องภาระงาน' },
+        { size:17, weight:600, tracking:'0', sample:'ต้องตัดสินใจ', use:'หัวข้อบล็อก · ตัวเลขเด่นในช่องตาราง' },
+        { size:16, weight:600, tracking:'0', sample:'฿1,800,000', use:'จำนวนเงินในแถวสรุป' },
+        { size:15, weight:600, tracking:'0', sample:'Café ทองหล่อ', use:'ชื่อโครงการในแถวตาราง' },
+        { size:14, weight:500, tracking:'0', sample:'ใช้คน-สัปดาห์ไปแล้ว 132%', use:'เนื้อหาหลัก · ประโยคในกฎธุรกิจ' },
+        { size:13, weight:400, tracking:'0', sample:'เรียงตามความเสี่ยง', use:'ปุ่ม · เมนู · เนื้อหารอง' },
+        { size:12, weight:400, tracking:'0', sample:'Squad D (คุณเอ) · ลูกค้า คุณสมชาย', use:'คำอธิบาย · หัวคอลัมน์' },
+        { size:11, weight:400, tracking:'0', sample:'ปรับทีละ 0.25 คน-สัปดาห์', use:'label เล็ก · หมายเหตุ · legend' },
+        { size:10, weight:400, tracking:'0', sample:'คน-สัปดาห์', use:'หน่วยใต้ตัวเลข (เล็กสุดที่ใช้ได้)' },
+      ],
+
+      spacing: [
+        { px:2, use:'ช่องไฟระหว่างก้อน 0.25' },
+        { px:4, use:'ระยะในป้ายเล็ก' },
+        { px:6, use:'ระยะไอคอน–ข้อความ' },
+        { px:8, use:'หน่วยฐาน · gap ทั่วไป' },
+        { px:12, use:'ระยะในช่องตาราง' },
+        { px:16, use:'padding การ์ด · gap บล็อก' },
+        { px:20, use:'padding การ์ดใหญ่' },
+        { px:24, use:'gap คอลัมน์หลัก' },
+        { px:32, use:'padding ซ้าย-ขวาของหน้า' },
+        { px:40, use:'ระยะระหว่างหมวดใหญ่' },
+      ],
+
+      radii: [
+        { px:2, use:'แถบข้อมูล · ก้อน 0.25' },
+        { px:3, use:'กล่องสัญลักษณ์เล็ก · ป้ายตัวเลข' },
+        { px:4, use:'ปุ่ม · ช่องกรอก · ป้ายสถานะ' },
+        { px:6, use:'การ์ด · กล่องใหญ่ · modal' },
+        { px:20, use:'ชิปตัวเลือก · แท็กทักษะ (pill)' },
+      ],
+
+      heights: [
+        { px:56, use:'แถบนำทางบน' },
+        { px:44, use:'แถวติ๊กบนมือถือ (hit target ต่ำสุด)' },
+        { px:38, use:'ปุ่มหลัก desktop · ช่องจัดสรร' },
+        { px:34, use:'ปุ่มรอง' },
+        { px:30, use:'ช่องกรอกตัวเลขกลางประโยค' },
+        { px:37, use:'หัวตาราง (padding 9px)' },
+        { px:52, use:'แถวตารางบรรทัดเดียว (padding 14px)' },
+        { px:74, use:'แถวตารางสองบรรทัด / ช่องภาระงาน' },
+        { px:8, use:'แถบสมดุล Squad' },
+        { px:7, use:'แถบซ้อนสองชั้น (ชั้นละ 7px เว้น 3px)' },
+      ],
+
+      allocStates: [
+        { state:'ปกติ · กดได้จริง', value:live > 0 ? live.toFixed(2) : 'ว่าง', quarters: liveQ, cursor:'pointer', wrapBg:WHITE, wrapBorder:BORDER, valueColor: live > 0 ? INK : MUTE, note:'คลิกก้อนที่ต้องการ · คลิกซ้ำเพื่อล้าง', noteColor:MUTE },
+        { state:'ชี้เมาส์', value:'0.50', quarters:this.quarters(0.50,'hover'), cursor:'pointer', wrapBg:BG, wrapBorder:BORDER, valueColor:INK, note:'ก้อนที่ยังว่างขึ้นเส้นกรอบเข้มเพื่อบอกว่ากดได้', noteColor:MUTE },
+        { state:'กดอยู่', value:'0.75', quarters:this.quarters(0.75,'active'), cursor:'pointer', wrapBg:HOVER, wrapBorder:INK, valueColor:INK, note:'พื้นเข้มขึ้นหนึ่งขั้นระหว่างกด', noteColor:MUTE },
+        { state:'ปิดใช้งาน · ปิดรอบแล้ว', value:'0.50', quarters:this.quarters(0.50,'disabled'), cursor:'not-allowed', wrapBg:SUBTLE, wrapBorder:BORDER, valueColor:DIS, note:'สัปดาห์นี้ปิดรอบแล้ว — ขอเปิดรอบย้อนหลังที่หัวหน้าแผนก', noteColor:SUB },
+        { state:'ผิดพลาด · รวมเกิน 1.00', value:'1.25', quarters:this.quarters(1.0,'error'), cursor:'pointer', wrapBg:TRED, wrapBorder:RED, valueColor:RED, note:'เกินเต็มสัปดาห์ — ลดลง 0.25', noteColor:RED },
+        { state:'ว่างเปล่า · ยังไม่จัดสรร', value:'ว่าง', quarters:this.quarters(0,'empty'), cursor:'pointer', wrapBg:WHITE, wrapBorder:BORDER, valueColor:MUTE, note:'คนนี้ยังไม่ได้รับงานในสัปดาห์นี้', noteColor:MUTE },
+        { state:'กำลังโหลด', value:'—', quarters:this.quarters(0,'loading'), cursor:'default', wrapBg:BG, wrapBorder:BORDER, valueColor:DIS, note:'กำลังดึงข้อมูลการจัดสรรของสัปดาห์นี้', noteColor:MUTE },
+        { state:'ไม่มีสิทธิ์ · คนนอก Squad', value:'0.50', quarters:this.quarters(0.50,'disabled'), cursor:'not-allowed', wrapBg:SUBTLE, wrapBorder:BORDER, valueColor:SUB, note:'จัดสรรได้เฉพาะสมาชิก Squad ของคุณ — ขอย้ายคนที่หัวหน้าแผนก', noteColor:SUB },
+      ],
+
+      loadCells: [
+        { state:'วิกฤต · เกิน 110%', isData:true, pct:'110%', mark:'▲', color:RED, barW:91.6, bg:WHITE, pips:pips(3,2), countText:'เกินเกณฑ์', countColor:RED },
+        { state:'เตือน · 100–110%', isData:true, pct:'105%', mark:'◆', color:YEL, barW:87.5, bg:WHITE, pips:pips(2,2), countText:'2 โครงการ', countColor:SUB },
+        { state:'ปกติ · 65–100%', isData:true, pct:'95%', mark:'●', color:GRN, barW:79.1, bg:WHITE, pips:pips(2,2), countText:'2 โครงการ', countColor:SUB },
+        { state:'โหลดต่ำ · ต่ำกว่า 65%', isData:true, pct:'45%', mark:'○', color:BLU, barW:37.5, bg:WHITE, pips:pips(1,2), countText:'1 โครงการ', countColor:SUB },
+        { state:'ว่างเปล่า', isEmpty:true, bg:WHITE },
+        { state:'กำลังโหลด', isSkeleton:true, bg:WHITE },
+        { state:'ไม่มีสิทธิ์เข้าถึง', isLocked:true, bg:BG },
+      ],
+
+      squadBars: [
+        { name:'Squad A', pct:102, label:'เตือน', color:YEL, mark:'◆', barW:85 },
+        { name:'Squad B', pct:118, label:'วิกฤต', color:RED, mark:'▲', barW:98.3 },
+        { name:'Squad C', pct:85, label:'ปกติ', color:GRN, mark:'●', barW:70.8 },
+        { name:'Squad D', pct:55, label:'โหลดต่ำ', color:BLU, mark:'○', barW:45.8 },
+      ],
+
+      dualBars: [
+        { state:'ใช้แรงงานเร็วกว่างานมาก · วิกฤต', prog:45, progW:45, used:132, usedW:100, color:RED, note:'ใช้แรงงานเร็วกว่างาน 87 จุด', noteColor:RED },
+        { state:'เร็วกว่าเล็กน้อย · เตือน', prog:38, progW:38, used:71, usedW:71, color:YEL, note:'ใช้แรงงานเร็วกว่างาน 33 จุด', noteColor:YEL },
+        { state:'เดินคู่กันตามแผน · ปกติ', prog:60, progW:60, used:52, usedW:52, color:SUB, note:'งานเดินเร็วกว่าแรงงาน 8 จุด', noteColor:MUTE },
+      ],
+
+      phaseStates: [
+        { label:'ยังไม่เริ่ม', mark:'○', fg:MUTE, bg:WHITE, border:BORDER, borderStyle:'dashed' },
+        { label:'กำลังทำ', mark:'◐', fg:INK, bg:SUBTLE, border:BORDER, borderStyle:'solid' },
+        { label:'ส่งลูกค้าแล้ว', mark:'◑', fg:INK, bg:WHITE, border:INK, borderStyle:'solid' },
+        { label:'อนุมัติแล้ว', mark:'✓', fg:'#FAFAF8', bg:INK, border:INK, borderStyle:'solid' },
+        { label:'วางบิลแล้ว', mark:'✓', fg:'#FAFAF8', bg:ACCENT, border:ACCENT, borderStyle:'solid' },
+        { label:'รับเงินแล้ว', mark:'✓', fg:'#FAFAF8', bg:GRN, border:GRN, borderStyle:'solid' },
+      ],
+      phaseTrack: [
+        { label:'ยังไม่เริ่ม', trackBg:INK, fg:SUB },
+        { label:'กำลังทำ', trackBg:INK, fg:SUB },
+        { label:'ส่งลูกค้า', trackBg:INK, fg:SUB },
+        { label:'อนุมัติ', trackBg:INK, fg:INK },
+        { label:'วางบิล', trackBg:SUBTLE, fg:MUTE },
+        { label:'รับเงิน', trackBg:SUBTLE, fg:MUTE },
+      ],
+
+      riskBadges: [
+        { label:'วิกฤต', mark:'▲', color:RED, hex:'#B33A3A', rule:'ส่วนต่างเกิน 15 จุด · โหลดเกิน 110%' },
+        { label:'เตือน', mark:'◆', color:YEL, hex:'#C79A2E', rule:'ส่วนต่าง 5–15 จุด · โหลด 100–110%' },
+        { label:'ปกติ', mark:'●', color:GRN, hex:'#2F7A4F', rule:'ส่วนต่างต่ำกว่า 5 จุด · โหลด 65–100%' },
+        { label:'โหลดต่ำ', mark:'○', color:BLU, hex:'#5B7C99', rule:'โหลดต่ำกว่า 65% — ไม่ใช่ความผิด เป็นโอกาสรับงาน' },
+      ],
+
+      money: [
+        { text:'฿1,800,000', size:20, color:INK, use:'จำนวนเต็ม ใช้ในแผงคำนวณและตารางที่ต้องบวกเลขด้วยตา' },
+        { text:'−฿842,000', size:20, color:INK, use:'ค่าใช้จ่าย ใช้ − นำหน้า ไม่ใช้วงเล็บ ไม่ใช้สีแดงถ้าเป็นรายการปกติ' },
+        { text:'฿48.2M', size:24, color:INK, use:'ตัวเลขระดับผู้บริหาร ย่อ M ทศนิยม 1 ตำแหน่ง' },
+        { text:'฿842K', size:20, color:INK, use:'ย่อ K เมื่อพื้นที่จำกัด (ในการ์ดหรือช่องตารางแคบ)' },
+        { text:'−4%', size:20, color:RED, use:'เปอร์เซ็นต์ติดลบที่เป็นปัญหาจริง เช่น Margin ขาดทุน — ใส่สีแดงได้ (ห้ามผสม ฿ กับ %)' },
+        { text:'฿0', size:20, color:MUTE, use:'ยังไม่มีข้อมูล แสดง ฿0 สีจาง ไม่แสดงช่องว่างเปล่า' },
+      ],
+
+      constraints: [
+        { state:'ปกติ · อธิบายกติกาพร้อมทางออก', bg:SUBTLE, border:BORDER, lockColor:SUB, fg:INK, text:'จัดสรรได้เฉพาะสมาชิก Squad A', how:'ถ้าต้องการคนจาก Squad อื่น หัวหน้าแผนกเป็นผู้ย้ายให้', cta:'ส่งคำขอถึงหัวหน้าแผนก', cursor:'pointer', btnFg:ACCENT, btnBg:WHITE, btnBorder:BORDER },
+        { state:'ชี้เมาส์ที่ปุ่ม', bg:SUBTLE, border:BORDER, lockColor:SUB, fg:INK, text:'จัดสรรได้เฉพาะสมาชิก Squad A', how:'ถ้าต้องการคนจาก Squad อื่น หัวหน้าแผนกเป็นผู้ย้ายให้', cta:'ส่งคำขอถึงหัวหน้าแผนก', cursor:'pointer', btnFg:ACCENT, btnBg:WHITE, btnBorder:ACCENT },
+        { state:'ส่งคำขอแล้ว · รออนุมัติ', bg:TYEL, border:YEL, lockColor:AMBER, fg:INK, text:'ส่งคำขอย้ายคุณเคเข้า Squad A แล้ว', how:'รอหัวหน้าแผนกพิจารณา · ส่งเมื่อ 2 ส.ค. 09:12', cta:'ดูสถานะคำขอ', cursor:'pointer', btnFg:SUB, btnBg:WHITE, btnBorder:BORDER },
+      ],
+
+      requests: [
+        { state:'ปกติ · คำขอกำลังเสริม', kind:'กำลังเสริม', glyph:'+', kindFg:INK, iconBg:WHITE, iconBorder:INK, iconFg:INK, bg:WHITE, border:BORDER, fg:INK, age:'ขอมา 2 วัน',
+          body:'Squad B ขอ Mid เพิ่ม 1 คน เป็นเวลา 6 สัปดาห์', reason:'เหตุผล: ID-2026-020 เข้างวด DD · Squad C มีคนว่างพอ 0.5 คน-สัปดาห์/สัปดาห์',
+          okLabel:'อนุมัติ', okFg:'#FAFAF8', okBg:ACCENT, okBorder:ACCENT, noFg:SUB, noBorder:BORDER, cursor:'pointer', impact:'ผลกระทบ: Squad C ขึ้นเป็น 96% ใน ต.ค.' },
+        { state:'ปกติ · คำขอย้ายคน', kind:'ย้ายคน', glyph:'⇄', kindFg:INK, iconBg:SUBTLE, iconBorder:BORDER, iconFg:INK, bg:WHITE, border:BORDER, fg:INK, age:'ขอมา 5 วัน',
+          body:'ย้ายคุณซี จาก Squad A ไป Squad C 4 สัปดาห์', reason:'เหตุผล: ต้องการประสบการณ์งาน Site ที่ Squad A ไม่มี · เกินเกณฑ์รีวิว 3 วัน',
+          okLabel:'อนุมัติ', okFg:'#FAFAF8', okBg:ACCENT, okBorder:ACCENT, noFg:SUB, noBorder:BORDER, cursor:'pointer', impact:'ผลกระทบ: Squad A ลด 0.5 คน-สัปดาห์/สัปดาห์' },
+        { state:'ปิดใช้งาน · ไม่มีสิทธิ์อนุมัติ', kind:'ย้ายคน', glyph:'⇄', kindFg:SUB, iconBg:SUBTLE, iconBorder:BORDER, iconFg:MUTE, bg:BG, border:BORDER, fg:SUB, age:'ขอมา 1 วัน',
+          body:'ย้ายคุณเค จาก Squad C ไป Squad B 6 สัปดาห์', reason:'คำขอนี้อนุมัติโดยหัวหน้าแผนก Interior — คุณดูได้แต่ไม่ได้เป็นผู้อนุมัติ',
+          okLabel:'อนุมัติ', okFg:DIS, okBg:SUBTLE, okBorder:BORDER, noFg:DIS, noBorder:BORDER, cursor:'not-allowed', impact:'ติดต่อ คุณกิตติ (HoD Interior)' },
+        { state:'ตัดสินใจแล้ว', kind:'กำลังเสริม', glyph:'✓', kindFg:GRN, iconBg:GRN, iconBorder:GRN, iconFg:'#FAFAF8', bg:WHITE, border:GRN, fg:SUB, age:'อนุมัติเมื่อ 1 ส.ค.',
+          body:'อนุมัติ Mid 1 คน 6 สัปดาห์ ให้ Squad B', reason:'ผู้อนุมัติ: คุณกิตติ · เริ่มมีผลสัปดาห์ 33',
+          okLabel:'อนุมัติแล้ว', okFg:GRN, okBg:TGRN, okBorder:GRN, noFg:DIS, noBorder:BORDER, cursor:'default', impact:'ย้อนกลับได้ภายใน 7 วัน' },
+      ],
+
+      skillTagRows: [
+        { state:'ปกติ / เลือกอยู่ / ทักษะใหม่', cursor:'pointer', tags:[
+          { label:'AutoCAD', fg:SUB, bg:WHITE, border:BORDER, borderStyle:'solid', badge:'', badgeDisplay:'none', badgeFg:MUTE },
+          { label:'SketchUp', fg:'#FAFAF8', bg:INK, border:INK, borderStyle:'solid', badge:'', badgeDisplay:'none', badgeFg:MUTE },
+          { label:'Revit', fg:ACCENT, bg:WHITE, border:ACCENT, borderStyle:'solid', badge:'ใหม่', badgeDisplay:'inline', badgeFg:ACCENT },
+        ]},
+        { state:'เพิ่มได้ / ปิดใช้งาน', cursor:'pointer', tags:[
+          { label:'+ เพิ่มทักษะ', fg:ACCENT, bg:WHITE, border:BORDER, borderStyle:'dashed', badge:'', badgeDisplay:'none', badgeFg:MUTE },
+          { label:'Rhino', fg:DIS, bg:SUBTLE, border:BORDER, borderStyle:'solid', badge:'', badgeDisplay:'none', badgeFg:MUTE },
+        ]},
+        { state:'ว่างเปล่า', cursor:'default', tags:[
+          { label:'ยังไม่ได้ระบุทักษะสัปดาห์นี้', fg:MUTE, bg:WHITE, border:BORDER, borderStyle:'dashed', badge:'', badgeDisplay:'none', badgeFg:MUTE },
+        ]},
+        { state:'กำลังโหลด', cursor:'default', tags:[
+          { label:'••••••', fg:DIS, bg:SUBTLE, border:BORDER, borderStyle:'solid', badge:'', badgeDisplay:'none', badgeFg:MUTE },
+          { label:'••••', fg:DIS, bg:SUBTLE, border:BORDER, borderStyle:'solid', badge:'', badgeDisplay:'none', badgeFg:MUTE },
+        ]},
+      ],
+
+      revisions: [
+        { state:'ปกติ · ยังอยู่ในโควตา', color:INK, text:'รอบที่ 1 / โควตา 2', note:'เหลือ 1 รอบในงวดนี้', noteColor:MUTE,
+          pips:[{bg:INK,border:INK,style:'solid'},{bg:WHITE,border:BORDER,style:'dashed'}] },
+        { state:'เตือน · ใช้โควตาครบ', color:YEL, text:'รอบที่ 2 / โควตา 2', note:'ครบโควตาแล้ว รอบต่อไปต้องขออนุมัติ', noteColor:YEL,
+          pips:[{bg:YEL,border:YEL,style:'solid'},{bg:YEL,border:YEL,style:'solid'}] },
+        { state:'วิกฤต · เกินโควตา', color:RED, text:'รอบที่ 3 / โควตา 2', note:'เกินโควตา 1 รอบ · ต้นทุนเพิ่ม 2.5 คน-สัปดาห์ — ต้องให้หัวหน้าแผนกตัดสินว่าเก็บเงินเพิ่มหรือแถม', noteColor:RED,
+          pips:[{bg:RED,border:RED,style:'solid'},{bg:RED,border:RED,style:'solid'},{bg:RED,border:RED,style:'solid'}] },
+        { state:'ว่างเปล่า · ยังไม่มีการแก้', color:MUTE, text:'ยังไม่มีรอบแก้แบบ', note:'โควตา 2 รอบในงวดนี้', noteColor:MUTE,
+          pips:[{bg:WHITE,border:BORDER,style:'dashed'},{bg:WHITE,border:BORDER,style:'dashed'}] },
+      ],
+
+      buttons: [
+        { state:'ปกติ', cursor:'pointer', priLabel:'บันทึก', priFg:'#FAFAF8', priBg:ACCENT, priBorder:ACCENT, secLabel:'ยกเลิก', secFg:SUB, secBg:WHITE, secBorder:BORDER, inputVal:'32', inputBg:WHITE, inputBorder:BORDER, inputFg:INK, hint:'ปุ่มหลัก 38px · ปุ่มรอง 34px · ช่องกรอก 30px', hintColor:MUTE },
+        { state:'ชี้เมาส์', cursor:'pointer', priLabel:'บันทึก', priFg:'#FAFAF8', priBg:INK, priBorder:INK, secLabel:'ยกเลิก', secFg:INK, secBg:WHITE, secBorder:INK, inputVal:'32', inputBg:WHITE, inputBorder:INK, inputFg:INK, hint:'ปุ่มหลักเข้มขึ้นเป็นสีตัวอักษรหลัก ไม่ใช้เงา', hintColor:MUTE },
+        { state:'กดอยู่', cursor:'pointer', priLabel:'บันทึก', priFg:'#E3E2DD', priBg:'#16304F', priBorder:'#16304F', secLabel:'ยกเลิก', secFg:INK, secBg:HOVER, secBorder:INK, inputVal:'32', inputBg:HOVER, inputBorder:INK, inputFg:INK, hint:'สีเข้มลงหนึ่งขั้น ไม่มีการขยับตำแหน่ง', hintColor:MUTE },
+        { state:'โฟกัส (คีย์บอร์ด)', cursor:'pointer', priLabel:'บันทึก', priFg:'#FAFAF8', priBg:ACCENT, priBorder:INK, secLabel:'ยกเลิก', secFg:SUB, secBg:WHITE, secBorder:INK, inputVal:'32', inputBg:WHITE, inputBorder:ACCENT, inputFg:INK, hint:'เส้นกรอบเปลี่ยนเป็นสีเน้นหรือสีตัวอักษรหลัก', hintColor:MUTE },
+        { state:'ปิดใช้งาน', cursor:'not-allowed', priLabel:'บันทึก', priFg:DIS, priBg:SUBTLE, priBorder:BORDER, secLabel:'ยกเลิก', secFg:DIS, secBg:SUBTLE, secBorder:BORDER, inputVal:'32', inputBg:SUBTLE, inputBorder:BORDER, inputFg:DIS, hint:'ต้องมีคำอธิบายข้างปุ่มเสมอว่าทำไมกดไม่ได้', hintColor:SUB },
+        { state:'ผิดพลาด', cursor:'pointer', priLabel:'ลองใหม่', priFg:'#FAFAF8', priBg:RED, priBorder:RED, secLabel:'ยกเลิก', secFg:SUB, secBg:WHITE, secBorder:BORDER, inputVal:'132', inputBg:TRED, inputBorder:RED, inputFg:RED, hint:'ค่าเกินเกณฑ์ — ต้องบอกด้วยว่าต้องแก้เป็นเท่าไร', hintColor:RED },
+        { state:'กำลังโหลด', cursor:'progress', priLabel:'กำลังบันทึก…', priFg:'#C7D2E0', priBg:'#3C5B89', priBorder:'#3C5B89', secLabel:'ยกเลิก', secFg:DIS, secBg:WHITE, secBorder:BORDER, inputVal:'—', inputBg:BG, inputBorder:BORDER, inputFg:DIS, hint:'ปุ่มคงความกว้างเดิม ไม่กระโดด', hintColor:MUTE },
+        { state:'ไม่มีสิทธิ์เข้าถึง', cursor:'not-allowed', priLabel:'บันทึก', priFg:DIS, priBg:SUBTLE, priBorder:BORDER, secLabel:'ขอสิทธิ์เข้าถึง', secFg:ACCENT, secBg:WHITE, secBorder:BORDER, inputVal:'••••', inputBg:BG, inputBorder:BORDER, inputFg:MUTE, hint:'ไม่ใช้สีแดง · ปุ่มรองเปลี่ยนเป็นทางออก: ขอสิทธิ์จาก HoPD', hintColor:SUB },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

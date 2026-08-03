@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  body { margin:0; background:#FAFAF8; font-family:'IBM Plex Sans Thai', sans-serif; color:#1C1C1A; -webkit-font-smoothing:antialiased; font-variant-numeric:tabular-nums; }
+  a { color:#2B4C7E; text-decoration:none; }
+  a:hover { color:#1C1C1A; }
+  ::selection { background:#E3E2DD; }
+</style>
+</helmet>
+<div style="min-height:100vh; background:#FAFAF8; font-variant-numeric:tabular-nums;">
+
+  <div style="position:sticky; top:0; z-index:20; background:#FAFAF8; border-bottom:1px solid #E3E2DD;">
+    <div style="max-width:1440px; margin:0 auto; padding:0 32px; height:56px; display:flex; align-items:center; gap:32px;">
+      <div style="display:flex; align-items:baseline; gap:8px;">
+        <span style="font-size:15px; font-weight:700; letter-spacing:0.14em;">DPM</span>
+        <span style="font-size:11px; color:#9A9A94; letter-spacing:0.04em;">Design Project Manager</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:2px; margin-left:8px;">
+        <span style="font-size:13px; font-weight:600; color:#1C1C1A; padding:6px 12px; border-radius:4px; background:#F2F1ED;">Portfolio</span>
+        <span style="font-size:13px; color:#6B6B66; padding:6px 12px; border-radius:4px; cursor:pointer;" style-hover="background:#F2F1ED; color:#1C1C1A;">แผนก</span>
+        <span style="font-size:13px; color:#6B6B66; padding:6px 12px; border-radius:4px; cursor:pointer;" style-hover="background:#F2F1ED; color:#1C1C1A;">โครงการ</span>
+        <span style="font-size:13px; color:#6B6B66; padding:6px 12px; border-radius:4px; cursor:pointer;" style-hover="background:#F2F1ED; color:#1C1C1A;">คน</span>
+        <span style="font-size:13px; color:#6B6B66; padding:6px 12px; border-radius:4px; cursor:pointer;" style-hover="background:#F2F1ED; color:#1C1C1A;">การเงิน</span>
+      </div>
+      <div style="flex:1; display:flex; justify-content:flex-end; align-items:center; gap:16px;">
+        <div style="display:flex; align-items:center; gap:8px; width:280px; height:32px; padding:0 10px; border:1px solid #E3E2DD; border-radius:4px; background:#FFFFFF; cursor:text;">
+          <span style="color:#9A9A94; font-size:13px;">⌕</span>
+          <span style="font-size:13px; color:#9A9A94; flex:1;">ค้นหาโครงการ คน หรือคำสั่ง</span>
+          <span style="font-size:11px; color:#6B6B66; font-family:'IBM Plex Mono', monospace; border:1px solid #E3E2DD; border-radius:3px; padding:1px 5px; background:#F2F1ED;">⌘K</span>
+        </div>
+        <div style="width:1px; height:24px; background:#E3E2DD;"></div>
+        <div style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+          <div style="width:28px; height:28px; border-radius:4px; background:#2B4C7E; color:#FAFAF8; font-size:11px; font-weight:600; display:flex; align-items:center; justify-content:center;">ณฐ</div>
+          <div style="line-height:1.25;">
+            <div style="font-size:12px; font-weight:600;">ณัฐพงศ์ ว.</div>
+            <div style="font-size:10px; color:#9A9A94;">Head of Project Delivery</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="max-width:1440px; margin:0 auto; padding:24px 32px 64px;">
+
+    <div style="display:flex; align-items:flex-end; justify-content:space-between; margin-bottom:20px;">
+      <div>
+        <h1 style="margin:0; font-size:22px; font-weight:600; letter-spacing:-0.01em;">Portfolio Control Room</h1>
+        <div style="margin-top:4px; font-size:12px; color:#6B6B66;">วันจันทร์ที่ 3 สิงหาคม 2569 · ข้อมูล ณ 08:00 น. · 24 โครงการที่ดำเนินอยู่</div>
+      </div>
+      <div style="font-size:12px; color:#9A9A94;">รอบสัปดาห์ W31 · ปิดรอบคน-สัปดาห์ ศุกร์ 17:00</div>
+    </div>
+
+    <div style="display:grid; grid-template-columns:repeat(5, 1fr); border:1px solid #E3E2DD; border-radius:6px; background:#FFFFFF; margin-bottom:24px; overflow:hidden;">
+      <div style="padding:16px 20px; border-right:1px solid #E3E2DD;">
+        <div style="font-size:12px; color:#6B6B66; margin-bottom:6px;">งานในมือ</div>
+        <div style="font-size:34px; font-weight:600; letter-spacing:-0.02em; line-height:1.1;">฿48.2M</div>
+        <div style="font-size:11px; color:#9A9A94; margin-top:6px;">24 โครงการ</div>
+      </div>
+      <div style="padding:16px 20px; border-right:1px solid #E3E2DD;">
+        <div style="font-size:12px; color:#6B6B66; margin-bottom:6px;">รับรู้รายได้แล้ว</div>
+        <div style="font-size:34px; font-weight:600; letter-spacing:-0.02em; line-height:1.1;">฿31.4M</div>
+        <div style="font-size:11px; color:#9A9A94; margin-top:6px;">65% ของงานในมือ</div>
+      </div>
+      <div style="padding:16px 20px; border-right:1px solid #E3E2DD;">
+        <div style="font-size:12px; color:#6B6B66; margin-bottom:6px;">เงินค้างรับ</div>
+        <div style="font-size:34px; font-weight:600; letter-spacing:-0.02em; line-height:1.1;">฿6.8M</div>
+        <div style="font-size:11px; color:#B33A3A; margin-top:6px; display:flex; align-items:center; gap:5px;"><span style="font-size:9px;">▲</span>ค้างเกิน 90 วัน ฿1.2M</div>
+      </div>
+      <div style="padding:16px 20px; border-right:1px solid #E3E2DD;">
+        <div style="font-size:12px; color:#6B6B66; margin-bottom:6px;">Margin เฉลี่ย</div>
+        <div style="font-size:34px; font-weight:600; letter-spacing:-0.02em; line-height:1.1;">28.4%</div>
+        <div style="font-size:11px; color:#C79A2E; margin-top:6px; display:flex; align-items:center; gap:5px;"><span style="font-size:9px;">◆</span>ต่ำกว่าเป้า 2 จุด</div>
+      </div>
+      <div style="padding:16px 20px;">
+        <div style="font-size:12px; color:#6B6B66; margin-bottom:6px;">การใช้กำลังคน</div>
+        <div style="font-size:34px; font-weight:600; letter-spacing:-0.02em; line-height:1.1;">81%</div>
+        <div style="font-size:11px; color:#9A9A94; margin-top:6px;">เป้าหมาย 78–88%</div>
+      </div>
+    </div>
+
+    <div style="border:1px solid #1C1C1A; border-radius:6px; background:#FFFFFF; margin-bottom:28px;">
+      <div style="display:flex; align-items:center; justify-content:space-between; padding:14px 20px; border-bottom:1px solid #E3E2DD;">
+        <div style="display:flex; align-items:baseline; gap:10px;">
+          <span style="font-size:16px; font-weight:600;">ต้องตัดสินใจ</span>
+          <span style="font-size:12px; font-weight:600; color:#FAFAF8; background:#B33A3A; border-radius:4px; padding:2px 7px;">3</span>
+          <span style="font-size:12px; color:#9A9A94;">เกินเกณฑ์ที่ตั้งไว้ · รอคุณตัดสินใจ</span>
+        </div>
+        <span style="font-size:12px; color:#6B6B66; border:1px solid #E3E2DD; border-radius:4px; padding:5px 12px; cursor:pointer;" style-hover="border-color:#1C1C1A; color:#1C1C1A;">ตั้งค่าเกณฑ์</span>
+      </div>
+
+      <div style="display:flex; gap:16px; padding:18px 20px; border-bottom:1px solid #E3E2DD; align-items:flex-start;">
+        <div style="display:flex; align-items:center; gap:6px; width:88px; flex-shrink:0; padding-top:2px;">
+          <span style="color:#B33A3A; font-size:11px;">▲</span>
+          <span style="font-size:12px; font-weight:600; color:#B33A3A;">วิกฤต</span>
+        </div>
+        <div style="flex:1; min-width:0;">
+          <div style="display:flex; align-items:baseline; gap:10px; margin-bottom:6px;">
+            <span style="font-family:'IBM Plex Mono', monospace; font-size:13px; font-weight:500;">ID-2026-004</span>
+            <span style="font-size:15px; font-weight:600;">Café ทองหล่อ</span>
+            <span style="font-size:12px; color:#9A9A94;">Squad A · แผนก ID</span>
+          </div>
+          <div style="font-size:14px; color:#1C1C1A; line-height:1.55;">ใช้คน-สัปดาห์ไปแล้ว <b style="color:#B33A3A;">132%</b> ขณะที่งวด 3 เสร็จเพียง <b>45%</b></div>
+          <div style="margin-top:8px; padding:8px 12px; background:#F2F1ED; border-left:2px solid #B33A3A; border-radius:0 4px 4px 0; font-size:13px; color:#1C1C1A;">พยากรณ์ตอนจบ: เกินงบ <b>61%</b> → Margin เหลือ <b style="color:#B33A3A;">−4%</b></div>
+          <div style="margin-top:10px; font-size:13px; color:#6B6B66;">คำถามที่ต้องตอบ: หยุดขาดทุนตอนนี้ หรือ เจรจาขอเพิ่มเงินกับลูกค้า?</div>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:8px; width:132px; flex-shrink:0;">
+          <span style="font-size:13px; text-align:center; color:#FAFAF8; background:#2B4C7E; border-radius:4px; padding:7px 12px; cursor:pointer;" style-hover="background:#1C1C1A;">ดูโครงการ</span>
+          <span style="font-size:12px; text-align:center; color:#6B6B66; border:1px solid #E3E2DD; border-radius:4px; padding:6px 12px; cursor:pointer;" style-hover="border-color:#1C1C1A; color:#1C1C1A;">พักไว้ก่อน</span>
+        </div>
+      </div>
+
+      <div style="display:flex; gap:16px; padding:18px 20px; border-bottom:1px solid #E3E2DD; align-items:flex-start;">
+        <div style="display:flex; align-items:center; gap:6px; width:88px; flex-shrink:0; padding-top:2px;">
+          <span style="color:#B33A3A; font-size:11px;">▲</span>
+          <span style="font-size:12px; font-weight:600; color:#B33A3A;">วิกฤต</span>
+        </div>
+        <div style="flex:1; min-width:0;">
+          <div style="display:flex; align-items:baseline; gap:10px; margin-bottom:6px;">
+            <span style="font-family:'IBM Plex Mono', monospace; font-size:13px; font-weight:500;">AR-2025-011</span>
+            <span style="font-size:15px; font-weight:600;">อาคารสำนักงานพระราม 9</span>
+            <span style="font-size:12px; color:#9A9A94;">Squad C · แผนก AR</span>
+          </div>
+          <div style="font-size:14px; line-height:1.55;">งวด 4 อนุมัติแล้ว <b style="color:#B33A3A;">12 วัน</b> แต่ยังไม่วางบิล <b>฿1.20M</b></div>
+          <div style="margin-top:10px; font-size:13px; color:#6B6B66;">ต้องทำ: ส่งเรื่องให้บัญชีออกใบแจ้งหนี้ภายในวันนี้ มิฉะนั้นเลื่อนไปรอบเก็บเงินเดือนหน้า</div>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:8px; width:132px; flex-shrink:0;">
+          <span style="font-size:13px; text-align:center; color:#FAFAF8; background:#2B4C7E; border-radius:4px; padding:7px 12px; cursor:pointer;" style-hover="background:#1C1C1A;">สั่งวางบิล</span>
+          <span style="font-size:12px; text-align:center; color:#6B6B66; border:1px solid #E3E2DD; border-radius:4px; padding:6px 12px; cursor:pointer;" style-hover="border-color:#1C1C1A; color:#1C1C1A;">ดูงวดงาน</span>
+        </div>
+      </div>
+
+      <div style="display:flex; gap:16px; padding:18px 20px; align-items:flex-start;">
+        <div style="display:flex; align-items:center; gap:6px; width:88px; flex-shrink:0; padding-top:2px;">
+          <span style="color:#C79A2E; font-size:10px;">◆</span>
+          <span style="font-size:12px; font-weight:600; color:#C79A2E;">เตือน</span>
+        </div>
+        <div style="flex:1; min-width:0;">
+          <div style="display:flex; align-items:baseline; gap:10px; margin-bottom:6px;">
+            <span style="font-size:15px; font-weight:600;">Squad B จะรับงานล้น 118% ในเดือน ต.ค.–พ.ย.</span>
+            <span style="font-size:12px; color:#9A9A94;">แผนก ID</span>
+          </div>
+          <div style="font-size:14px; line-height:1.55;">ขณะที่ Squad A เหลือกำลังว่าง <b>2.5 คน-สัปดาห์/สัปดาห์</b> ในช่วงเดียวกัน</div>
+          <div style="margin-top:10px; font-size:13px; color:#6B6B66;">ต้องทำ: การย้ายคนข้าม Squad ทำได้เฉพาะหัวหน้าแผนก — คุณมีสิทธิ์อนุมัติ เปิดหน้าภาระงานเพื่อย้าย</div>
+          <div style="margin-top:10px; display:flex; align-items:center; gap:10px;">
+            <span style="font-size:11px; color:#9A9A94; width:64px;">Squad B</span>
+            <div style="position:relative; flex:1; max-width:320px; height:8px; background:#F2F1ED; border-radius:2px;">
+              <div style="position:absolute; left:0; top:0; bottom:0; width:84.7%; background:#C79A2E; border-radius:2px;"></div>
+              <div style="position:absolute; left:84.7%; top:-3px; bottom:-3px; width:1px; background:#1C1C1A;"></div>
+            </div>
+            <span style="font-size:12px; font-weight:600; color:#C79A2E; width:44px;">118%</span>
+          </div>
+          <div style="margin-top:5px; display:flex; align-items:center; gap:10px;">
+            <span style="font-size:11px; color:#9A9A94; width:64px;">Squad A</span>
+            <div style="position:relative; flex:1; max-width:320px; height:8px; background:#F2F1ED; border-radius:2px;">
+              <div style="position:absolute; left:0; top:0; bottom:0; width:45.7%; background:#5B7C99; border-radius:2px;"></div>
+              <div style="position:absolute; left:84.7%; top:-3px; bottom:-3px; width:1px; background:#1C1C1A;"></div>
+            </div>
+            <span style="font-size:12px; font-weight:600; color:#5B7C99; width:44px;">64%</span>
+          </div>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:8px; width:132px; flex-shrink:0;">
+          <span style="font-size:13px; text-align:center; color:#FAFAF8; background:#2B4C7E; border-radius:4px; padding:7px 12px; cursor:pointer;" style-hover="background:#1C1C1A;">ดูภาระงาน</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+      <div style="display:flex; align-items:center; gap:4px;">
+        <sc-for list="{{ filters }}" as="f" hint-placeholder-count="5">
+          <span style="font-size:13px; padding:6px 12px; border-radius:4px; cursor:pointer; color:{{ f.color }}; background:{{ f.bg }}; font-weight:{{ f.weight }};" onClick="{{ f.select }}">{{ f.label }}</span>
+        </sc-for>
+      </div>
+      <div style="display:flex; align-items:center; gap:16px;">
+        <span style="font-size:12px; color:#6B6B66;">เรียงตาม <b style="color:#1C1C1A;">ความเสี่ยง</b> ▾</span>
+        <span style="font-size:12px; color:#6B6B66; border:1px solid #E3E2DD; border-radius:4px; padding:5px 12px; cursor:pointer;" style-hover="border-color:#1C1C1A; color:#1C1C1A;">ส่งออก CSV</span>
+      </div>
+    </div>
+
+    <div style="border:1px solid #E3E2DD; border-radius:6px; background:#FFFFFF; overflow:hidden;">
+      <div style="display:grid; grid-template-columns:76px 108px minmax(150px,1fr) 62px 52px 176px 148px 96px 104px; align-items:end; gap:12px; padding:10px 20px 8px; border-bottom:1px solid #E3E2DD; background:#F2F1ED; font-size:11px; color:#6B6B66;">
+        <div>สถานะ</div>
+        <div>รหัส</div>
+        <div>ชื่อโครงการ</div>
+        <div>Squad</div>
+        <div>งวด</div>
+        <div>ความคืบหน้า เทียบ ใช้คน-สัปดาห์</div>
+        <div>ช้า · เรา / ลูกค้า</div>
+        <div style="text-align:right;">ใช้ไป</div>
+        <div style="text-align:right;">
+          <div style="margin-bottom:3px;">Margin</div>
+          <div style="display:inline-flex; border:1px solid #E3E2DD; border-radius:4px; overflow:hidden; background:#FAFAF8;">
+            <span style="font-size:10px; padding:2px 6px; cursor:pointer; color:{{ mNowColor }}; background:{{ mNowBg }};" onClick="{{ showNow }}">ปัจจุบัน</span>
+            <span style="font-size:10px; padding:2px 6px; cursor:pointer; color:{{ mFcColor }}; background:{{ mFcBg }};" onClick="{{ showForecast }}">ตอนจบ</span>
+          </div>
+        </div>
+      </div>
+
+      <sc-for list="{{ rows }}" as="r" hint-placeholder-count="4">
+        <div style="display:grid; grid-template-columns:76px 108px minmax(150px,1fr) 62px 52px 176px 148px 96px 104px; align-items:center; gap:12px; padding:14px 20px; border-bottom:1px solid #E3E2DD; cursor:pointer;" style-hover="background:#FAFAF8;">
+          <div style="display:flex; align-items:center; gap:6px;">
+            <span style="font-size:10px; color:{{ r.statusColor }};">{{ r.statusMark }}</span>
+            <span style="font-size:11px; font-weight:600; color:{{ r.statusColor }};">{{ r.statusLabel }}</span>
+          </div>
+          <div style="font-family:'IBM Plex Mono', monospace; font-size:12px;">{{ r.code }}</div>
+          <div style="font-size:14px; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ r.name }}</div>
+          <div style="font-size:13px; color:#6B6B66;">{{ r.squad }}</div>
+          <div style="font-size:13px; color:#6B6B66;">{{ r.phase }}</div>
+
+          <div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <div style="position:relative; flex:1; height:7px; background:#F2F1ED; border-radius:2px;">
+                <div style="position:absolute; left:0; top:0; bottom:0; width:{{ r.progW }}%; background:#1C1C1A; border-radius:2px;"></div>
+              </div>
+              <span style="font-size:11px; color:#6B6B66; width:34px; text-align:right;">{{ r.progress }}%</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px; margin-top:3px;">
+              <div style="position:relative; flex:1; height:7px; background:#F2F1ED; border-radius:2px;">
+                <div style="position:absolute; left:0; top:0; bottom:0; width:{{ r.usedW }}%; background:{{ r.usedColor }}; border-radius:2px;"></div>
+                <div style="position:absolute; left:{{ r.progW }}%; top:-3px; bottom:-3px; width:1px; background:#1C1C1A;"></div>
+              </div>
+              <span style="font-size:11px; width:34px; text-align:right; color:{{ r.usedColor }}; font-weight:{{ r.usedWeight }};">{{ r.used }}%</span>
+            </div>
+            <div style="margin-top:4px; font-size:11px; color:{{ r.gapColor }};">{{ r.gapText }}</div>
+          </div>
+
+          <div style="display:flex; align-items:center; gap:6px;">
+            <span style="font-size:12px; width:30px; text-align:right; color:{{ r.usColor }}; font-weight:{{ r.usWeight }};">{{ r.usDays }}d</span>
+            <div style="flex:1; display:flex; align-items:center; height:14px;">
+              <div style="flex:1; display:flex; justify-content:flex-end;"><div style="height:10px; width:{{ r.usW }}%; background:{{ r.usColor }}; border-radius:2px 0 0 2px;"></div></div>
+              <div style="width:1px; height:14px; background:#9A9A94;"></div>
+              <div style="flex:1; display:flex;"><div style="height:10px; width:{{ r.clW }}%; background:{{ r.clColor }}; border-radius:0 2px 2px 0;"></div></div>
+            </div>
+            <span style="font-size:12px; width:30px; color:{{ r.clColor }}; font-weight:{{ r.clWeight }};">{{ r.clDays }}d</span>
+          </div>
+
+          <div style="text-align:right; font-size:14px; font-weight:500; color:{{ r.usedColor }};">{{ r.used }}%</div>
+          <div style="text-align:right;">
+            <div style="font-size:16px; font-weight:600; color:{{ r.marginColor }};">{{ r.marginText }}</div>
+            <div style="font-size:10px; color:#9A9A94; margin-top:1px;">{{ r.marginNote }}</div>
+          </div>
+        </div>
+      </sc-for>
+
+      <div style="display:flex; align-items:center; justify-content:space-between; padding:12px 20px; font-size:12px; color:#9A9A94;">
+        <span>{{ footNote }}</span>
+        <span style="display:flex; align-items:center; gap:16px;">
+          <span style="display:flex; align-items:center; gap:5px;"><span style="width:14px; height:6px; background:#1C1C1A; border-radius:2px; display:inline-block;"></span>ความคืบหน้างาน</span>
+          <span style="display:flex; align-items:center; gap:5px;"><span style="width:14px; height:6px; background:#9A9A94; border-radius:2px; display:inline-block;"></span>คน-สัปดาห์ที่ใช้</span>
+          <span style="display:flex; align-items:center; gap:5px;"><span style="width:1px; height:12px; background:#1C1C1A; display:inline-block;"></span>เส้นอ้างอิง = ความคืบหน้า</span>
+          <span style="display:flex; align-items:center; gap:5px;"><span style="width:14px; height:6px; background:#5B7C99; border-radius:2px; display:inline-block;"></span>ความล่าช้าฝั่งลูกค้า</span>
+        </span>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:1200}}">
+const INK='#1C1C1A', SUB='#6B6B66', MUTE='#9A9A94', RED='#B33A3A', YEL='#C79A2E', GRN='#2F7A4F', BLU='#5B7C99';
+
+const DATA = [
+  { code:'ID-2026-004', name:'Café ทองหล่อ', dept:'ID', squad:'A', phase:'3/4', progress:45, used:132, us:9, cl:4, marginNow:6, marginFc:-4, status:'red' },
+  { code:'AR-2026-002', name:'โกดังบางนา', dept:'AR', squad:'C', phase:'2/5', progress:38, used:71, us:3, cl:18, marginNow:24, marginFc:19, status:'yellow' },
+  { code:'HS-2026-007', name:'บ้านคุณสมชาย', dept:'House', squad:'D', phase:'1/4', progress:18, used:14, us:0, cl:0, marginNow:35, marginFc:34, status:'green' },
+  { code:'GR-2026-014', name:'Rebrand XYZ', dept:'Graphic', squad:'F', phase:'2/3', progress:60, used:52, us:0, cl:2, marginNow:40, marginFc:41, status:'green' },
+];
+
+const FILTERS = [
+  { key:'all', label:'ทั้งหมด 24' },
+  { key:'AR', label:'AR 9' },
+  { key:'ID', label:'ID 6' },
+  { key:'House', label:'House 5' },
+  { key:'Graphic', label:'Graphic 4' },
+];
+
+const STATUS = {
+  red:    { mark:'▲', color:RED,  label:'วิกฤต' },
+  yellow: { mark:'◆', color:YEL,  label:'เตือน' },
+  green:  { mark:'●', color:GRN,  label:'ปกติ' },
+  blue:   { mark:'○', color:BLU,  label:'โหลดต่ำ' },
+};
+
+class Component extends DCLogic {
+  state = { margin: 'forecast', filter: 'all' };
+
+  renderVals() {
+    const { margin, filter } = this.state;
+    const maxDelay = 20;
+
+    const rows = DATA.filter(d => filter === 'all' || d.dept === filter).map(d => {
+      const s = STATUS[d.status];
+      const gap = d.used - d.progress;
+      const ahead = gap > 12;
+      const m = margin === 'forecast' ? d.marginFc : d.marginNow;
+      return {
+        ...d,
+        statusMark:s.mark, statusColor:s.color, statusLabel:s.label,
+        progW: Math.min(100, d.progress),
+        usedW: Math.min(100, d.used),
+        usedColor: d.used > 110 ? RED : (gap > 12 ? YEL : SUB),
+        usedWeight: gap > 12 ? 600 : 400,
+        gapText: gap > 12 ? 'ใช้แรงงานเร็วกว่างาน ' + gap + ' จุด' : (gap < -8 ? 'งานเดินเร็วกว่าแรงงาน ' + Math.abs(gap) + ' จุด' : 'เดินคู่กันตามแผน'),
+        gapColor: gap > 12 ? (d.used > 110 ? RED : YEL) : MUTE,
+        usDays: d.us, clDays: d.cl,
+        usW: d.us ? Math.max(8, (d.us / maxDelay) * 100) : 0,
+        clW: d.cl ? Math.max(8, (d.cl / maxDelay) * 100) : 0,
+        usColor: d.us > 5 ? RED : (d.us > 0 ? YEL : MUTE),
+        clColor: d.cl > 0 ? BLU : MUTE,
+        usWeight: d.us > 5 ? 600 : 400,
+        clWeight: d.cl > 5 ? 600 : 400,
+        marginText: (m < 0 ? '−' : '') + Math.abs(m) + '%',
+        marginColor: m < 0 ? RED : (m < 20 ? YEL : INK),
+        marginNote: margin === 'forecast' ? 'พยากรณ์ตอนจบ' : 'ณ ปัจจุบัน',
+      };
+    });
+
+    const filters = FILTERS.map(f => ({
+      label: f.label,
+      color: filter === f.key ? INK : SUB,
+      bg: filter === f.key ? '#F2F1ED' : 'transparent',
+      weight: filter === f.key ? 600 : 400,
+      select: () => this.setState({ filter: f.key }),
+    }));
+
+    const isFc = margin === 'forecast';
+    return {
+      rows, filters,
+      footNote: 'แสดง ' + rows.length + ' จาก 24 โครงการ · เรียงตามความเสี่ยงสูงสุดก่อน',
+      showNow: () => this.setState({ margin:'now' }),
+      showForecast: () => this.setState({ margin:'forecast' }),
+      mNowColor: isFc ? SUB : '#FAFAF8', mNowBg: isFc ? 'transparent' : INK,
+      mFcColor: isFc ? '#FAFAF8' : SUB,  mFcBg: isFc ? INK : 'transparent',
+    };
+  }
+}
+</script>
+</body>
+</html>
