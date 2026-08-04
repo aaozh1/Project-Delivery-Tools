@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
+import { Link, useSearchParams } from 'react-router-dom'
+import { tryApi } from '../api/client'
 import type { CSSProperties, MouseEvent } from 'react'
 import { Button, MoneyFigure } from '../components'
 import { baht, personWeeks, snapQuarter } from '../lib/format'
@@ -21,7 +23,7 @@ const ROLE_LABEL: Record<RoleKey, string> = { senior: 'Senior', mid: 'Mid', juni
  */
 const CENTRAL_RATES: Record<RoleKey, number> = { senior: 30_000, mid: 17_000, junior: 10_000 }
 
-const CONTRACT = 1_800_000
+const DEFAULT_CONTRACT = 1_800_000
 const SOFTWARE_COST = 36_000
 const OUTSOURCE_COST = 120_000
 const OVERHEAD_COST = 180_000
@@ -199,6 +201,68 @@ function Stepper({ value, onChange }: { value: number; onChange: (v: number) => 
 
 export function ProjectPlanPage() {
   const [alloc, setAlloc] = useState<Record<RoleKey, number>[]>(DEFAULT_ALLOC)
+
+  /* ── โครงการที่กำลังวางแผน — ?project=CODE เปิดโครงการจริงจากเซิร์ฟเวอร์ ── */
+  const [searchParams] = useSearchParams()
+  const paramCode = searchParams.get('project')
+  const [header, setHeader] = useState({
+    code: 'HS-2026-007',
+    name: 'บ้านคุณสมชาย ทองหล่อ',
+    client: 'คุณสมชาย',
+    squad: 'D',
+    bd: 'คุณบี',
+  })
+  const [contract, setContract] = useState(DEFAULT_CONTRACT)
+  /** โครงการสถานะ planning ที่รอ Senior รับไปวางแผน (จาก Handoff จริง) */
+  const [queue, setQueue] = useState<Array<{ code: string; name: string; client: string }>>([])
+  const [submitState, setSubmitState] = useState<'idle' | 'sent' | 'offline'>('idle')
+
+  useEffect(() => {
+    let cancelled = false
+    void (async () => {
+      const res = await tryApi<{
+        projects: Array<{ code: string; name: string; client: string; squad: string; bd: string; contractValue: number | null; status?: string }>
+      }>('/api/projects')
+      if (cancelled || !res) return
+      if (paramCode) {
+        const p = res.projects.find((x) => x.code === paramCode)
+        if (p) {
+          setHeader({ code: p.code, name: p.name, client: p.client, squad: p.squad, bd: p.bd })
+          if (p.contractValue) setContract(p.contractValue)
+        }
+      }
+      setQueue(
+        res.projects
+          .filter((x) => x.status === 'planning' && x.code !== paramCode)
+          .map((x) => ({ code: x.code, name: x.name, client: x.client })),
+      )
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [paramCode])
+
+  /** ส่งแผนเข้ารีวิว — เขียนที่เซิร์ฟเวอร์ (โครงการ → in_review + audit) */
+  const submitPlan = () => {
+    void (async () => {
+      const res = await tryApi('/api/plans', {
+        method: 'POST',
+        body: JSON.stringify({
+          projectCode: header.code,
+          phases: PHASES.map((p, i) => ({
+            no: i + 1,
+            name: p.name,
+            weightPct: p.pct,
+            value: Math.round((contract * p.pct) / 100),
+            pw: { sr: alloc[i].senior, mid: alloc[i].mid, jr: alloc[i].junior },
+          })),
+          totalPw: totalPW,
+          marginPct: Math.round(marginPct * 10) / 10,
+        }),
+      })
+      setSubmitState(res ? 'sent' : 'offline')
+    })()
+  }
   /** งวดที่ขยาย (1–4) — ขยายได้ทีละอัน · 0 = พับหมด */
   const [openPhase, setOpenPhase] = useState(1)
   const [flash, setFlash] = useState(false)
@@ -221,8 +285,8 @@ export function ProjectPlanPage() {
   alloc.forEach((r) => ROLE_KEYS.forEach((k) => (totals[k] += r[k])))
   const totalPW = totals.senior + totals.mid + totals.junior
   const col = ROLE_KEYS.reduce((sum, k) => sum + totals[k] * CENTRAL_RATES[k], 0)
-  const margin = CONTRACT - col - SOFTWARE_COST - OUTSOURCE_COST - OVERHEAD_COST
-  const marginPct = (margin / CONTRACT) * 100
+  const margin = contract - col - SOFTWARE_COST - OUTSOURCE_COST - OVERHEAD_COST
+  const marginPct = (margin / contract) * 100
   const marginPass = marginPct >= MARGIN_TARGET_PCT
   const marginColor = marginPass
     ? 'var(--dpm-ink)'
@@ -230,7 +294,7 @@ export function ProjectPlanPage() {
       ? 'var(--dpm-yellow)'
       : 'var(--dpm-red)'
   const maxRolePW = Math.max(totals.senior, totals.mid, totals.junior) || 1
-  const colColor = col > CONTRACT * 0.5 ? 'var(--dpm-red)' : 'var(--dpm-ink)'
+  const colColor = col > contract * 0.5 ? 'var(--dpm-red)' : 'var(--dpm-ink)'
 
   const capPct = totalPW > 0 ? Math.round((SQUAD_CAPACITY / totalPW) * 100) : 100
   const capLevel: 'ok' | 'warn' | 'critical' = capPct >= 100 ? 'ok' : capPct >= 80 ? 'warn' : 'critical'
@@ -268,10 +332,10 @@ export function ProjectPlanPage() {
         <div style={{ minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 10 }}>
             <span className="dpm-mono" style={{ fontSize: 13, color: 'var(--dpm-sub)' }}>
-              HS-2026-007
+              {header.code}
             </span>
             <h1 style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.01em' }}>
-              บ้านคุณสมชาย ทองหล่อ
+              {header.name}
             </h1>
           </div>
           <div
@@ -289,24 +353,97 @@ export function ProjectPlanPage() {
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: 5,
-                color: 'var(--dpm-yellow)',
+                color: submitState === 'sent' ? 'var(--dpm-green)' : 'var(--dpm-yellow)',
                 fontWeight: 600,
               }}
             >
-              <span style={{ fontSize: 9 }}>◆</span>กำลังวางแผน
+              <span style={{ fontSize: 9 }}>{submitState === 'sent' ? '●' : '◆'}</span>
+              {submitState === 'sent' ? 'ส่งรีวิวแล้ว — รอ HoD' : 'กำลังวางแผน'}
             </span>
             <span style={{ color: 'var(--dpm-border)' }}>|</span>
-            <span>Squad D (คุณเอ)</span>
+            <span>Squad {header.squad} (คุณเอ)</span>
             <span style={{ color: 'var(--dpm-border)' }}>|</span>
-            <span>ลูกค้า คุณสมชาย</span>
+            <span>ลูกค้า {header.client}</span>
             <span style={{ color: 'var(--dpm-border)' }}>|</span>
-            <span>BD คุณบี</span>
+            <span>BD {header.bd}</span>
           </div>
         </div>
         <span style={{ flex: 1 }} />
         <Button variant="secondary">บันทึกร่าง</Button>
-        <Button variant="primary">ส่ง HoD รีวิว</Button>
+        <Button variant="primary" disabled={submitState === 'sent'} onClick={submitPlan}>
+          {submitState === 'sent' ? 'ส่งแล้ว ✓' : 'ส่ง HoD รีวิว'}
+        </Button>
       </div>
+
+      {/* สถานะการส่ง + คิวโครงการที่รอวางแผน (จาก Handoff จริง) */}
+      {submitState === 'sent' && (
+        <div
+          style={{
+            marginTop: 10,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10,
+            padding: '10px 14px',
+            border: '1px solid var(--dpm-green)',
+            background: 'var(--dpm-tint-green)',
+            borderRadius: 'var(--dpm-radius-card)',
+            fontSize: 13,
+          }}
+        >
+          <span style={{ fontSize: 10, color: 'var(--dpm-green)' }}>✓</span>
+          แผน {header.code} ถูกส่งเข้าคิวรีวิวของหัวหน้าแผนกแล้ว (บันทึกที่เซิร์ฟเวอร์ + Audit Log) —
+          โครงการเปลี่ยนสถานะเป็น "รอรีวิว"
+          <Link to="/review" style={{ fontSize: 12 }}>
+            เปิดหน้ารีวิวในมุมมอง HoD →
+          </Link>
+        </div>
+      )}
+      {submitState === 'offline' && (
+        <div
+          style={{
+            marginTop: 10,
+            padding: '10px 14px',
+            background: 'var(--dpm-subtle)',
+            borderRadius: 'var(--dpm-radius-card)',
+            fontSize: 12,
+            color: 'var(--dpm-sub)',
+          }}
+        >
+          ยังไม่ได้เชื่อมเซิร์ฟเวอร์ — แผนยังไม่ถูกบันทึก · รัน{' '}
+          <span className="dpm-mono">npm run dev:full</span> แล้วส่งอีกครั้ง
+        </div>
+      )}
+      {queue.length > 0 && submitState !== 'sent' && (
+        <div
+          style={{
+            marginTop: 10,
+            display: 'flex',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: 10,
+            padding: '10px 14px',
+            background: 'var(--dpm-subtle)',
+            borderRadius: 'var(--dpm-radius-card)',
+            fontSize: 13,
+          }}
+        >
+          <span style={{ fontSize: 9, color: 'var(--dpm-accent)' }}>●</span>
+          <b>คิวรอวางแผนจาก BD ({queue.length})</b>
+          {queue.map((q) => (
+            <Link
+              key={q.code}
+              to={`/plan?project=${q.code}`}
+              className="dpm-chip"
+              style={{ textDecoration: 'none' }}
+            >
+              <span className="dpm-mono" style={{ fontSize: 11 }}>
+                {q.code}
+              </span>
+              {q.name}
+            </Link>
+          ))}
+        </div>
+      )}
 
       {/* ── grid ซ้ายวางแผน / ขวาคำนวณ ─────────────────── */}
       <div
@@ -385,7 +522,7 @@ export function ProjectPlanPage() {
                 >
                   <span style={{ fontSize: 11 }}>✓</span>รวม 100%
                 </span>
-                <span style={{ fontSize: 12, color: 'var(--dpm-sub)' }}>{baht(CONTRACT)}</span>
+                <span style={{ fontSize: 12, color: 'var(--dpm-sub)' }}>{baht(contract)}</span>
               </div>
             </div>
 
@@ -434,7 +571,7 @@ export function ProjectPlanPage() {
                       {phase.pct}%
                     </span>
                     <span style={{ fontSize: 15, fontWeight: 600, textAlign: 'right' }}>
-                      {baht((CONTRACT * phase.pct) / 100)}
+                      {baht((contract * phase.pct) / 100)}
                     </span>
                   </div>
 
@@ -757,7 +894,7 @@ export function ProjectPlanPage() {
                 }}
               >
                 <span style={{ fontSize: 13, color: 'var(--dpm-sub)' }}>มูลค่าสัญญา</span>
-                <MoneyFigure value={CONTRACT} />
+                <MoneyFigure value={contract} />
               </div>
 
               {/* COL คำนวณสดจาก state ของทุกงวด */}

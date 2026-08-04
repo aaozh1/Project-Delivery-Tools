@@ -66,7 +66,9 @@ src/
 - [x] ทะเบียนโครงการกลาง `src/data/projects.ts` ใช้ร่วมกันข้ามหน้า
 - [x] Backend: Express + SQLite (`server/`) — session ต่อบทบาท · enforce สิทธิ์ฝั่ง server (ตัดข้อมูลเงินของ Designer, ขอบเขต BD, 403 พร้อมเหตุผล+ผู้ติดต่อ) · Business Rules อ่าน/เขียนผ่าน API · เรตค่าแรง reveal ทีละแถว + Audit Log จริง · เมนู Audit Log ใน S11
 - [x] Flow ที่เขียนข้อมูลทั้งหมดผ่าน API แล้ว: จัดสรรคน S6 (PUT ทีละช่อง + คัดลอกสัปดาห์ก่อน + ยืนยันรอบ→audit) · VO S8 (เสนอ/ตัดสิน — แถม/ปฏิเสธบังคับเหตุผล, ตัดสินได้เฉพาะ HoD/HoPD→audit) · Billing S9 (วางบิล/รับเงิน เดินหน้าทางเดียว 409 เมื่อผิดสถานะ→audit) · Handoff S0 (บันทึก HandoffBrief→audit)
-- [ ] หน้าอ่านอย่างเดียวที่เหลือ (S1 S2 S7 S10 S12 S13 S14) ยังใช้ mock — ต้องการ derived data (WorkloadSnapshot, GrowthProfile ฯลฯ) ตามภาคผนวก C ก่อน
+- [x] **วงจรหลักเล่นได้จริง end-to-end**: BD ส่ง Handoff → เกิดโครงการจริง (สถานะ planning + รหัสอัตโนมัติ) → Senior เห็นคิวในหน้าวางแผน เปิดโครงการผ่าน `?project=` (มูลค่า/Margin คิดตามสัญญาจริง) → ส่งแผน → HoD รีวิว/อนุมัติ → งวดงานถูกเขียนจริง โครงการ active
+- [x] **ตัวเลข derive จากตารางจัดสรร** (`/api/metrics`): แก้จัดสรรใน S6 แล้ว การใช้กำลังคน+ใช้ไป% ใน S1 และคอลัมน์เดือนปัจจุบันของ Squad A ใน S7 ขยับตามทันที · S6 เลื่อนดู/แก้ได้หลายสัปดาห์ (30–35)
+- [ ] ขยาย derived data ให้ครบทุก Squad/เดือน (ตอนนี้ live เฉพาะช่วงที่มีตารางจัดสรร — Squad A สัปดาห์ 30–35) และหน้า S2/S10/S12/S13/S14 ยัง mock
 - [ ] Auth จริง (SSO/รหัสผ่าน) แทน dev-login ต่อบทบาท · ย้าย SQLite → PostgreSQL เมื่อขึ้น production
 
 สเปกละเอียดของหน้า P0 อยู่ใน `docs/design-handoff/README.md` + prototype `.dc.html` · หน้า P1/P2 ที่ไม่มี prototype ออกแบบตาม design system + brief

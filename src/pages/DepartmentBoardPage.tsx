@@ -861,12 +861,13 @@ export function DepartmentBoardPage() {
                       justifyContent: 'center',
                     }}
                   >
-                    <Button
-                      variant="primary"
+                    <Link
+                      to="/review"
+                      className="dpm-btn dpm-btn--primary"
                       style={{ width: '100%', height: 34, fontSize: 13, padding: '0 10px' }}
                     >
                       {r.cta}
-                    </Button>
+                    </Link>
                     <button
                       type="button"
                       style={{

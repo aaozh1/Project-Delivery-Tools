@@ -136,6 +136,7 @@ app.get('/api/projects', (req, res) => {
       bd: p.bd,
       line: p.line,
       squad: p.squad,
+      status: p.status,
       contractValue: hideMoney ? null : p.contract_value,
       currentPhase: p.current_phase,
       progressPct: p.progress_pct,

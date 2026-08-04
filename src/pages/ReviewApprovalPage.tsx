@@ -1,10 +1,22 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
 import { Button, ConstraintNotice, MoneyFigure, RiskFlag } from '../components'
 import { STATUS, type RiskLevel } from '../lib/status'
 import { baht, percent, personWeeks } from '../lib/format'
 import { REVIEW_KINDS } from './department/data'
+import { tryApi } from '../api/client'
+
+interface ServerPlan {
+  id: number
+  projectCode: string
+  projectName: string
+  marginPct: number
+  status: string
+  submittedBy: string
+  decidedBy?: string
+  reason?: string
+}
 
 /**
  * S5 · Review & Approval — หัวหน้าแผนก (HoD) · คำถาม: "ผ่านหรือตีกลับ?"
@@ -191,6 +203,40 @@ export function ReviewApprovalPage() {
   const [rejectOpen, setRejectOpen] = useState(false)
   const [reason, setReason] = useState('')
 
+  /** แผน ID-2026-011 บนเซิร์ฟเวอร์ (ถ้ามี) — การตัดสินจะเขียนที่เซิร์ฟเวอร์จริง + audit */
+  const [livePlanId, setLivePlanId] = useState<number | null>(null)
+  /** แผนอื่นที่รอรีวิวอยู่ (เช่น แผนที่เพิ่งส่งจาก S3) — โชว์เป็นคิวให้รู้ว่ามีงานต่อ */
+  const [otherPending, setOtherPending] = useState<ServerPlan[]>([])
+  /** ถ้าแผน 011 ถูกตัดสินไปแล้วในระบบ — แจ้งสถานะจริงแทนให้ตัดสินซ้ำ */
+  const [alreadyDecided, setAlreadyDecided] = useState<ServerPlan | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    void (async () => {
+      const res = await tryApi<{ plans: ServerPlan[] }>('/api/plans')
+      if (cancelled || !res) return
+      const mine = res.plans.filter((p) => p.projectCode === PROJECT_CODE)
+      const proposed = mine.find((p) => p.status === 'proposed')
+      if (proposed) setLivePlanId(proposed.id)
+      else if (mine[0]) setAlreadyDecided(mine[0])
+      setOtherPending(res.plans.filter((p) => p.status === 'proposed' && p.projectCode !== PROJECT_CODE))
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  /** ตัดสินผ่านเซิร์ฟเวอร์เมื่อมีแผนจริง — offline ก็ยังเดิน state ฝั่งหน้าเหมือนเดิม */
+  const decide = (approve: boolean) => {
+    setDecision(approve ? 'approved' : 'rejected')
+    if (livePlanId !== null) {
+      void tryApi(`/api/plans/${livePlanId}/decide`, {
+        method: 'POST',
+        body: JSON.stringify({ approve, reason: approve ? undefined : reason.trim() }),
+      })
+    }
+  }
+
   const checkedCount = CHECKLIST.filter((c) => checked[c.id]).length
   const allChecked = checkedCount === CHECKLIST.length
   const reasonLen = reason.trim().length
@@ -288,6 +334,69 @@ export function ReviewApprovalPage() {
           <div style={{ marginTop: 4, fontSize: 11, color: 'var(--dpm-mute)' }}>รอรีวิว · เกินเกณฑ์แผนก 2 วัน</div>
         </div>
       </div>
+
+      {/* สถานะจริงจากเซิร์ฟเวอร์ — แผนนี้ถูกตัดสินแล้ว / มีแผนอื่นรอคิว */}
+      {(alreadyDecided || otherPending.length > 0) && (
+        <div
+          style={{
+            maxWidth: 'var(--dpm-page-max-w)',
+            margin: '0 auto',
+            padding: '12px var(--dpm-page-pad-x) 0',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 8,
+          }}
+        >
+          {alreadyDecided && (
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 10,
+                padding: '10px 14px',
+                background: 'var(--dpm-subtle)',
+                borderRadius: 'var(--dpm-radius-card)',
+                fontSize: 13,
+              }}
+            >
+              <span style={{ fontSize: 9, color: alreadyDecided.status === 'approved' ? 'var(--dpm-green)' : 'var(--dpm-yellow)' }}>
+                {alreadyDecided.status === 'approved' ? '✓' : '◆'}
+              </span>
+              แผน {PROJECT_CODE} ถูกตัดสินไปแล้วในระบบ —{' '}
+              {alreadyDecided.status === 'approved' ? 'อนุมัติ' : 'ตีกลับ'}โดย {alreadyDecided.decidedBy}
+              {alreadyDecided.reason && (
+                <span style={{ color: 'var(--dpm-sub)' }}>· เหตุผล: {alreadyDecided.reason}</span>
+              )}
+              <span style={{ fontSize: 11, color: 'var(--dpm-mute)' }}>(หน้านี้แสดงเป็นบันทึกย้อนหลัง — ปุ่มตัดสินถูกปิด)</span>
+            </div>
+          )}
+          {otherPending.map((p) => (
+            <div
+              key={p.id}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 10,
+                padding: '10px 14px',
+                border: '1px solid var(--dpm-yellow)',
+                background: 'var(--dpm-tint-yellow)',
+                borderRadius: 'var(--dpm-radius-card)',
+                fontSize: 13,
+              }}
+            >
+              <span style={{ fontSize: 9, color: 'var(--dpm-yellow)' }}>◆</span>
+              มีแผนรอรีวิวต่อคิว:{' '}
+              <span className="dpm-mono" style={{ fontSize: 12 }}>
+                {p.projectCode}
+              </span>{' '}
+              {p.projectName} · Margin {p.marginPct}% · ส่งโดย {p.submittedBy}
+              <span style={{ fontSize: 11, color: 'var(--dpm-amber-text)' }}>
+                — จะขึ้นมาแสดงเมื่อแผนปัจจุบันถูกตัดสิน
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* ── โครงหลัก: ซ้ายสรุปแผน ~1.4 : ขวาแผงตัดสิน 1 ─────────── */}
       <div
@@ -564,8 +673,8 @@ export function ReviewApprovalPage() {
               <div style={{ padding: '12px 18px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
                 <Button
                   variant="primary"
-                  disabled={!allChecked}
-                  onClick={() => setDecision('approved')}
+                  disabled={!allChecked || alreadyDecided !== null}
+                  onClick={() => decide(true)}
                   style={{ width: '100%' }}
                 >
                   อนุมัติและมอบให้ Squad
@@ -615,7 +724,11 @@ export function ReviewApprovalPage() {
                       }}
                     />
                     <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 10 }}>
-                      <Button variant="secondary" disabled={!reasonReady} onClick={() => setDecision('rejected')}>
+                      <Button
+                        variant="secondary"
+                        disabled={!reasonReady || alreadyDecided !== null}
+                        onClick={() => decide(false)}
+                      >
                         ยืนยันตีกลับ
                       </Button>
                       <span style={{ fontSize: 11, color: 'var(--dpm-mute)' }}>

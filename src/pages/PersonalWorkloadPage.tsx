@@ -1,8 +1,14 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { CSSProperties, ReactNode } from 'react'
 import { Button, StatusMark, WorkloadCell } from '../components'
 import { STATUS, loadLevel, type RiskLevel } from '../lib/status'
 import { percent, personWeeks } from '../lib/format'
+import { tryApi } from '../api/client'
+
+interface MetricsResponse {
+  latestWeek: number
+  memberLoads: Array<{ member: string; loadPct: number; projectCount: number }>
+}
 
 /**
  * S7 · ภาระงานรายบุคคล — designs/Personal Workload.dc.html
@@ -240,6 +246,7 @@ const LEGEND: { level: RiskLevel; label: string }[] = [
 ]
 
 interface GridSectionProps {
+  squads: SquadData[]
   cellVariant: 'v1' | 'v2'
   onCellVariant: (v: 'v1' | 'v2') => void
   openSquads: Record<string, boolean>
@@ -248,6 +255,7 @@ interface GridSectionProps {
 }
 
 function GridSection({
+  squads,
   cellVariant,
   onCellVariant,
   openSquads,
@@ -322,7 +330,7 @@ function GridSection({
           </div>
         </div>
 
-        {SQUADS.map((sq) => {
+        {squads.map((sq) => {
           const open = !!openSquads[sq.key]
           return (
             <div key={sq.key}>
@@ -870,6 +878,35 @@ export function PersonalWorkloadPage() {
     C: false,
   })
 
+  /* เดือนแรก (ส.ค.) ของ Squad A คำนวณสดจากตารางจัดสรรจริงบนเซิร์ฟเวอร์ —
+     แก้ค่าในหน้าจัดสรรกำลังคน (S6) แล้วตัวเลขคอลัมน์ ส.ค. ที่นี่ขยับตาม */
+  const [live, setLive] = useState<MetricsResponse | null>(null)
+  useEffect(() => {
+    let cancelled = false
+    void (async () => {
+      const res = await tryApi<MetricsResponse>('/api/metrics')
+      if (!cancelled && res) setLive(res)
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  const squads = SQUADS.map((sq) => {
+    if (sq.key !== 'A' || !live) return sq
+    const members = sq.members.map((m) => {
+      const hit = live.memberLoads.find((x) => x.member === m.name)
+      if (!hit) return m
+      return {
+        ...m,
+        load: [hit.loadPct, ...m.load.slice(1)],
+        count: [hit.projectCount, ...m.count.slice(1)],
+      }
+    })
+    const augTotal = Math.round(members.reduce((a, m) => a + m.load[0], 0) / members.length)
+    return { ...sq, members, totals: [augTotal, ...sq.totals.slice(1)] }
+  })
+
   const isPerson = view === 'person'
 
   return (
@@ -1013,6 +1050,7 @@ export function PersonalWorkloadPage() {
           <PersonSection onBack={() => setView('grid')} />
         ) : (
           <GridSection
+            squads={squads}
             cellVariant={cellVariant}
             onCellVariant={setCellVariant}
             openSquads={openSquads}

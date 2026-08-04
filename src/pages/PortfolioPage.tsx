@@ -1,5 +1,6 @@
-import { useState, type CSSProperties } from 'react'
+import { useEffect, useState, type CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
+import { tryApi } from '../api/client'
 import { Button, StatusMark } from '../components'
 import { STATUS, type RiskLevel } from '../lib/status'
 import { bahtAbbrev, percent } from '../lib/format'
@@ -39,7 +40,25 @@ const KPIS: Kpi[] = [
   { label: 'การใช้กำลังคน', value: '81%', note: 'เป้าหมาย 78–88%' },
 ]
 
-function KpiStrip() {
+interface LiveMetrics {
+  latestWeek: number
+  utilizationPct: number
+  projectUsage: Array<{ code: string; usedPct: number }>
+}
+
+function KpiStrip({ live }: { live: LiveMetrics | null }) {
+  const kpis: Kpi[] = live
+    ? KPIS.map((k) =>
+        k.label === 'การใช้กำลังคน'
+          ? {
+              label: k.label,
+              value: `${live.utilizationPct}%`,
+              note: `คำนวณสดจากตารางจัดสรร สัปดาห์ ${live.latestWeek} (Squad A)`,
+              noteLevel: live.utilizationPct > 110 ? 'critical' : undefined,
+            }
+          : k,
+      )
+    : KPIS
   return (
     <div
       className="dpm-card"
@@ -49,12 +68,12 @@ function KpiStrip() {
         marginBottom: 24,
       }}
     >
-      {KPIS.map((kpi, i) => (
+      {kpis.map((kpi, i) => (
         <div
           key={kpi.label}
           style={{
             padding: '16px 20px',
-            borderRight: i < KPIS.length - 1 ? '1px solid var(--dpm-border)' : 'none',
+            borderRight: i < kpis.length - 1 ? '1px solid var(--dpm-border)' : 'none',
           }}
         >
           <div style={{ fontSize: 12, color: 'var(--dpm-sub)', marginBottom: 6 }}>{kpi.label}</div>
@@ -110,12 +129,27 @@ function DecisionStatusCol({ level }: { level: RiskLevel }) {
   )
 }
 
-function DecisionActions({ primary, secondary }: { primary: string; secondary?: string }) {
+function DecisionActions({
+  primary,
+  secondary,
+  to,
+}: {
+  primary: string
+  secondary?: string
+  /** ปลายทางของปุ่มหลัก — ปุ่มใน DPM ต้องพาไปที่ที่ตัดสินใจต่อได้จริง */
+  to?: string
+}) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8, width: 132, flexShrink: 0 }}>
-      <Button variant="primary" style={{ width: '100%' }}>
-        {primary}
-      </Button>
+      {to ? (
+        <Link to={to} className="dpm-btn dpm-btn--primary" style={{ width: '100%' }}>
+          {primary}
+        </Link>
+      ) : (
+        <Button variant="primary" style={{ width: '100%' }}>
+          {primary}
+        </Button>
+      )}
       {secondary && (
         <Button variant="secondary" style={{ width: '100%' }}>
           {secondary}
@@ -246,7 +280,7 @@ function DecisionBox() {
             คำถามที่ต้องตอบ: หยุดขาดทุนตอนนี้ หรือ เจรจาขอเพิ่มเงินกับลูกค้า?
           </div>
         </div>
-        <DecisionActions primary="ดูโครงการ" secondary="พักไว้ก่อน" />
+        <DecisionActions primary="ดูโครงการ" secondary="พักไว้ก่อน" to="/project" />
       </div>
 
       {/* รายการ 2 — AR-2025-011 */}
@@ -268,7 +302,7 @@ function DecisionBox() {
             ต้องทำ: ส่งเรื่องให้บัญชีออกใบแจ้งหนี้ภายในวันนี้ มิฉะนั้นเลื่อนไปรอบเก็บเงินเดือนหน้า
           </div>
         </div>
-        <DecisionActions primary="สั่งวางบิล" secondary="ดูงวดงาน" />
+        <DecisionActions primary="สั่งวางบิล" secondary="ดูงวดงาน" to="/finance" />
       </div>
 
       {/* รายการ 3 — Squad B ล้น */}
@@ -303,7 +337,7 @@ function DecisionBox() {
             />
           </div>
         </div>
-        <DecisionActions primary="ดูภาระงาน" />
+        <DecisionActions primary="ดูภาระงาน" to="/workload" />
       </div>
     </div>
   )
@@ -627,7 +661,23 @@ export function PortfolioPage() {
   const [filter, setFilter] = useState<FilterKey>('all')
   const [marginMode, setMarginMode] = useState<MarginMode>('forecast')
 
-  const rows = PROJECTS.filter((p) => filter === 'all' || p.dept === filter)
+  /* ตัวเลขสดจากตารางจัดสรรบนเซิร์ฟเวอร์ — ใช้ไป% ของโครงการที่มีข้อมูลจริงจะทับค่า mock */
+  const [live, setLive] = useState<LiveMetrics | null>(null)
+  useEffect(() => {
+    let cancelled = false
+    void (async () => {
+      const res = await tryApi<LiveMetrics>('/api/metrics')
+      if (!cancelled && res) setLive(res)
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [])
+  const liveUsed = new Map((live?.projectUsage ?? []).map((u) => [u.code, u.usedPct]))
+
+  const rows = PROJECTS.filter((p) => filter === 'all' || p.dept === filter).map((p) =>
+    liveUsed.has(p.code) ? { ...p, used: liveUsed.get(p.code) as number } : p,
+  )
 
   /* จัดกลุ่มตาม Squad — window เรียงตามความเสี่ยงหนักสุดก่อน (Exception first) */
   const squads = [...new Set(rows.map((r) => r.squad))]
@@ -676,7 +726,7 @@ export function PortfolioPage() {
         </div>
       </div>
 
-      <KpiStrip />
+      <KpiStrip live={live} />
 
       {/* ── สถานะโครงการแยกตาม Squad — window ย่อยเรียงแนวนอน (ขึ้นก่อนกล่องตัดสินใจ) ── */}
       <div

@@ -13,9 +13,18 @@ import {
 } from './allocate/data'
 import { tryApi } from '../api/client'
 
-/* สัปดาห์ปัจจุบัน/ก่อนหน้าของ mock — เมื่อมีปฏิทินจริงค่านี้มาจากระบบ */
-const CURRENT_WEEK = 32
-const PREV_WEEK = 31
+/* ช่วงสัปดาห์ที่เลื่อนดู/แก้ได้ — เมื่อมีปฏิทินจริงค่านี้มาจากระบบ */
+const THIS_WEEK = 32
+const WEEK_MIN = 30
+const WEEK_MAX = 35
+const WEEK_DATES: Record<number, string> = {
+  30: '21–25 ก.ค. 2569',
+  31: '28 ก.ค. – 1 ส.ค. 2569',
+  32: '4–8 ส.ค. 2569',
+  33: '11–15 ส.ค. 2569',
+  34: '18–22 ส.ค. 2569',
+  35: '25–29 ส.ค. 2569',
+}
 
 interface AllocResponse {
   week: number
@@ -85,17 +94,34 @@ export function AllocateCapacityPage() {
   }
   useEffect(() => () => window.clearTimeout(flashTimer.current), [])
 
-  /* โหลดการจัดสรรสัปดาห์นี้จากเซิร์ฟเวอร์ (ไม่มีเซิร์ฟเวอร์ = ใช้ค่า mock เดิม) */
+  const [week, setWeek] = useState(THIS_WEEK)
+
+  /* โหลดการจัดสรรของสัปดาห์ที่เลือกจากเซิร์ฟเวอร์
+     — offline: สัปดาห์ 32 ใช้ mock เดิม สัปดาห์อื่นเริ่มจากตารางว่าง */
   useEffect(() => {
     let cancelled = false
     void (async () => {
-      const res = await tryApi<AllocResponse>(`/api/allocations?week=${CURRENT_WEEK}`)
-      if (!cancelled && res && res.entries.length > 0) setGrid(gridFromEntries(res.entries))
+      const res = await tryApi<AllocResponse>(`/api/allocations?week=${week}`)
+      if (cancelled) return
+      if (res) {
+        setGrid(
+          res.entries.length > 0
+            ? gridFromEntries(res.entries)
+            : MEMBERS.map(() => PROJECTS.map(() => 0)),
+        )
+      } else {
+        setGrid(
+          week === THIS_WEEK
+            ? INITIAL_GRID.map((row) => [...row])
+            : MEMBERS.map(() => PROJECTS.map(() => 0)),
+        )
+      }
+      setConfirmed(false)
     })()
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [week])
 
   const setCell = (row: number, col: number, value: number) => {
     const v = snapQuarter(value)
@@ -106,7 +132,7 @@ export function AllocateCapacityPage() {
     void tryApi('/api/allocations', {
       method: 'PUT',
       body: JSON.stringify({
-        week: CURRENT_WEEK,
+        week,
         member: MEMBERS[row].name,
         projectCode: PROJECTS[col].code,
         personWeeks: v,
@@ -117,7 +143,7 @@ export function AllocateCapacityPage() {
   /* เติมทั้งตารางในคลิกเดียว — ปกติสัปดาห์ใหม่เปลี่ยนจากเดิมแค่ ~20% */
   const copyLastWeek = () => {
     void (async () => {
-      const res = await tryApi<AllocResponse>(`/api/allocations?week=${PREV_WEEK}`)
+      const res = await tryApi<AllocResponse>(`/api/allocations?week=${week - 1}`)
       const next =
         res && res.entries.length > 0 ? gridFromEntries(res.entries) : LAST_WEEK_GRID.map((row) => [...row])
       setGrid(next)
@@ -125,7 +151,7 @@ export function AllocateCapacityPage() {
       pulse()
       void tryApi('/api/allocations/bulk', {
         method: 'PUT',
-        body: JSON.stringify({ week: CURRENT_WEEK, entries: entriesFromGrid(next) }),
+        body: JSON.stringify({ week, entries: entriesFromGrid(next) }),
       })
     })()
   }
@@ -236,22 +262,35 @@ export function AllocateCapacityPage() {
               padding: '4px 4px 4px 12px',
             }}
           >
-            <span style={{ fontSize: 14, fontWeight: 600, whiteSpace: 'nowrap' }}>สัปดาห์ 32</span>
+            <span style={{ fontSize: 14, fontWeight: 600, whiteSpace: 'nowrap' }}>สัปดาห์ {week}{week === THIS_WEEK ? '' : ' (ดูย้อน/ล่วงหน้า)'}</span>
             <span style={{ fontSize: 12, color: 'var(--dpm-sub)', whiteSpace: 'nowrap' }}>
-              4–8 ส.ค. 2569
+              {WEEK_DATES[week] ?? ''}
             </span>
-            <button type="button" aria-label="สัปดาห์ก่อนหน้า" style={weekNavBtn}>
+            <button
+              type="button"
+              aria-label="สัปดาห์ก่อนหน้า"
+              style={{ ...weekNavBtn, opacity: week <= WEEK_MIN ? 0.4 : 1 }}
+              disabled={week <= WEEK_MIN}
+              onClick={() => setWeek((w) => Math.max(WEEK_MIN, w - 1))}
+            >
               ‹
             </button>
-            <button type="button" aria-label="สัปดาห์ถัดไป" style={weekNavBtn}>
+            <button
+              type="button"
+              aria-label="สัปดาห์ถัดไป"
+              style={{ ...weekNavBtn, opacity: week >= WEEK_MAX ? 0.4 : 1 }}
+              disabled={week >= WEEK_MAX}
+              onClick={() => setWeek((w) => Math.min(WEEK_MAX, w + 1))}
+            >
               ›
             </button>
             <button
               type="button"
+              onClick={() => setWeek(THIS_WEEK)}
               style={{
                 fontSize: 12,
                 fontFamily: 'inherit',
-                color: 'var(--dpm-sub)',
+                color: week === THIS_WEEK ? 'var(--dpm-mute)' : 'var(--dpm-accent)',
                 background: 'none',
                 border: 'none',
                 borderLeft: CELL_BORDER,
@@ -704,7 +743,7 @@ export function AllocateCapacityPage() {
                 {problems
                   ? `กดไม่ได้ — มี ${problems} คนเกิน 1.00 ลดช่องที่เป็นสีแดงลงก่อน`
                   : confirmed
-                    ? 'ยืนยันสัปดาห์ 32 แล้ว — แก้ไขได้จนถึงปิดรอบ'
+                    ? `ยืนยันสัปดาห์ ${week} แล้ว — แก้ไขได้จนถึงปิดรอบ`
                     : 'ปิดรอบ ศุกร์ 17:00'}
               </span>
               <Button
@@ -715,7 +754,7 @@ export function AllocateCapacityPage() {
                   // บันทึกการยืนยันรอบสัปดาห์ลง Audit Log ฝั่งเซิร์ฟเวอร์
                   void tryApi('/api/allocations/confirm', {
                     method: 'POST',
-                    body: JSON.stringify({ week: CURRENT_WEEK }),
+                    body: JSON.stringify({ week }),
                   })
                 }}
               >
