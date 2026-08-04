@@ -11,6 +11,33 @@ import {
   MOVED_OUT_NOTE,
   PROJECTS,
 } from './allocate/data'
+import { tryApi } from '../api/client'
+
+/* สัปดาห์ปัจจุบัน/ก่อนหน้าของ mock — เมื่อมีปฏิทินจริงค่านี้มาจากระบบ */
+const CURRENT_WEEK = 32
+const PREV_WEEK = 31
+
+interface AllocResponse {
+  week: number
+  entries: Array<{ member: string; projectCode: string; personWeeks: number }>
+}
+
+/** แปลงรายการจาก API เป็น grid ตามลำดับ MEMBERS × PROJECTS */
+function gridFromEntries(entries: AllocResponse['entries']): number[][] {
+  const grid = MEMBERS.map(() => PROJECTS.map(() => 0))
+  for (const e of entries) {
+    const i = MEMBERS.findIndex((m) => m.name === e.member)
+    const j = PROJECTS.findIndex((p) => p.code === e.projectCode)
+    if (i >= 0 && j >= 0) grid[i][j] = snapQuarter(e.personWeeks)
+  }
+  return grid
+}
+
+function entriesFromGrid(grid: number[][]): AllocResponse['entries'] {
+  return grid.flatMap((row, i) =>
+    row.map((pw, j) => ({ member: MEMBERS[i].name, projectCode: PROJECTS[j].code, personWeeks: pw })),
+  )
+}
 
 /**
  * S6 — จัดสรรกำลังคน (Allocate Capacity)
@@ -58,19 +85,49 @@ export function AllocateCapacityPage() {
   }
   useEffect(() => () => window.clearTimeout(flashTimer.current), [])
 
+  /* โหลดการจัดสรรสัปดาห์นี้จากเซิร์ฟเวอร์ (ไม่มีเซิร์ฟเวอร์ = ใช้ค่า mock เดิม) */
+  useEffect(() => {
+    let cancelled = false
+    void (async () => {
+      const res = await tryApi<AllocResponse>(`/api/allocations?week=${CURRENT_WEEK}`)
+      if (!cancelled && res && res.entries.length > 0) setGrid(gridFromEntries(res.entries))
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
   const setCell = (row: number, col: number, value: number) => {
-    setGrid((g) =>
-      g.map((r, i) => (i === row ? r.map((x, j) => (j === col ? snapQuarter(value) : x)) : r)),
-    )
+    const v = snapQuarter(value)
+    setGrid((g) => g.map((r, i) => (i === row ? r.map((x, j) => (j === col ? v : x)) : r)))
     setConfirmed(false)
     pulse()
+    // เขียนลงเซิร์ฟเวอร์ทันทีทีละช่อง (WeeklyAllocation คือแหล่งเดียวของ COL จริง)
+    void tryApi('/api/allocations', {
+      method: 'PUT',
+      body: JSON.stringify({
+        week: CURRENT_WEEK,
+        member: MEMBERS[row].name,
+        projectCode: PROJECTS[col].code,
+        personWeeks: v,
+      }),
+    })
   }
 
   /* เติมทั้งตารางในคลิกเดียว — ปกติสัปดาห์ใหม่เปลี่ยนจากเดิมแค่ ~20% */
   const copyLastWeek = () => {
-    setGrid(LAST_WEEK_GRID.map((row) => [...row]))
-    setConfirmed(false)
-    pulse()
+    void (async () => {
+      const res = await tryApi<AllocResponse>(`/api/allocations?week=${PREV_WEEK}`)
+      const next =
+        res && res.entries.length > 0 ? gridFromEntries(res.entries) : LAST_WEEK_GRID.map((row) => [...row])
+      setGrid(next)
+      setConfirmed(false)
+      pulse()
+      void tryApi('/api/allocations/bulk', {
+        method: 'PUT',
+        body: JSON.stringify({ week: CURRENT_WEEK, entries: entriesFromGrid(next) }),
+      })
+    })()
   }
 
   const applySuggestion = () => {
@@ -653,7 +710,14 @@ export function AllocateCapacityPage() {
               <Button
                 variant="primary"
                 disabled={problems > 0 || confirmed}
-                onClick={() => setConfirmed(true)}
+                onClick={() => {
+                  setConfirmed(true)
+                  // บันทึกการยืนยันรอบสัปดาห์ลง Audit Log ฝั่งเซิร์ฟเวอร์
+                  void tryApi('/api/allocations/confirm', {
+                    method: 'POST',
+                    body: JSON.stringify({ week: CURRENT_WEEK }),
+                  })
+                }}
               >
                 {confirmed ? 'ยืนยันแล้ว ✓' : 'ยืนยันสัปดาห์นี้'}
               </Button>

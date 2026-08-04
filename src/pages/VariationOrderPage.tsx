@@ -1,4 +1,5 @@
-import { useState, type CSSProperties } from 'react'
+import { useEffect, useState, type CSSProperties } from 'react'
+import { tryApi } from '../api/client'
 import {
   Button,
   ConstraintNotice,
@@ -635,6 +636,18 @@ export function VariationOrderPage() {
   const persona = `${ROLE_PERSONA[role]} (${ROLE_SHORT[role]})`
 
   const [vos, setVos] = useState<Vo[]>(INITIAL_VOS)
+
+  /* โหลดทะเบียน VO จากเซิร์ฟเวอร์ (ไม่มีเซิร์ฟเวอร์ = mock เดิม) */
+  useEffect(() => {
+    let cancelled = false
+    void (async () => {
+      const res = await tryApi<{ vos: Vo[] }>('/api/vos')
+      if (!cancelled && res) setVos(res.vos)
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [])
   const [formOpen, setFormOpen] = useState(false)
   const [formSeed, setFormSeed] = useState<VoFormSeed>({
     projectCode: PROJECTS[0].code,
@@ -701,7 +714,7 @@ export function VariationOrderPage() {
   }
 
   const submitVo = (fields: VoFormSeed) => {
-    const vo: Vo = {
+    const local: Vo = {
       id: nextVoId(),
       projectCode: fields.projectCode,
       source: fields.source,
@@ -712,8 +725,21 @@ export function VariationOrderPage() {
       submittedBy: persona,
       submittedDate: TODAY_LABEL,
     }
-    setVos((prev) => [vo, ...prev])
+    setVos((prev) => [local, ...prev])
     setFormOpen(false)
+    // ส่งขึ้นเซิร์ฟเวอร์ — สำเร็จแล้วแทนที่ด้วยรายการจริง (id/ผู้เสนอ/วันที่จากเซิร์ฟเวอร์)
+    void tryApi<{ vo: Vo }>('/api/vos', {
+      method: 'POST',
+      body: JSON.stringify({
+        projectCode: fields.projectCode,
+        source: fields.source,
+        detail: fields.detail,
+        personWeeks: fields.pw,
+        linkedPhase: fields.linkedPhase,
+      }),
+    }).then((res) => {
+      if (res) setVos((prev) => prev.map((v) => (v.id === local.id ? res.vo : v)))
+    })
   }
 
   const openBlankForm = () => {
@@ -735,7 +761,8 @@ export function VariationOrderPage() {
     window.scrollTo({ top: 0 })
   }
 
-  const decideBillable = (id: string) =>
+  /* การตัดสินเขียนที่เซิร์ฟเวอร์ (hod/hopd เท่านั้น + audit) · optimistic update ฝั่งหน้า */
+  const decideBillable = (id: string) => {
     setVos((prev) =>
       prev.map((v) =>
         v.id === id
@@ -750,6 +777,13 @@ export function VariationOrderPage() {
           : v,
       ),
     )
+    void tryApi<{ vo: Vo }>(`/api/vos/${id}/decide`, {
+      method: 'POST',
+      body: JSON.stringify({ status: 'billable' }),
+    }).then((res) => {
+      if (res) setVos((prev) => prev.map((v) => (v.id === id ? res.vo : v)))
+    })
+  }
 
   const decideGoodwill = (id: string, reason: string) => {
     setVos((prev) =>
@@ -761,6 +795,12 @@ export function VariationOrderPage() {
     )
     setReasonFor(null)
     setReasonDraft('')
+    void tryApi<{ vo: Vo }>(`/api/vos/${id}/decide`, {
+      method: 'POST',
+      body: JSON.stringify({ status: 'goodwill', reason }),
+    }).then((res) => {
+      if (res) setVos((prev) => prev.map((v) => (v.id === id ? res.vo : v)))
+    })
   }
 
   /* ── บทบาทที่เข้าหน้านี้ไม่ได้ (Designer/Admin ตาม §5) — ไม่ใช่ error ── */

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { CSSProperties, KeyboardEvent, ReactNode } from 'react'
 import { Button, PrivacyNotice } from '../components'
+import { tryApi } from '../api/client'
 import { baht } from '../lib/format'
 import { STATUS } from '../lib/status'
 import { PROJECTS, SERVICE_LINE_LABELS } from '../data/projects'
@@ -622,6 +623,21 @@ export function HandoffFormPage() {
                   onClick={() => {
                     setSubmitted(true)
                     setSubmittedAt(nowLabel())
+                    // บันทึก HandoffBrief ที่เซิร์ฟเวอร์ (bd/hopd เท่านั้น + audit) — offline ก็ส่งต่อได้
+                    void tryApi('/api/handoff', {
+                      method: 'POST',
+                      body: JSON.stringify({
+                        client,
+                        projectName,
+                        line,
+                        contractValue,
+                        squad,
+                        revisionRounds,
+                        dueDate,
+                        note,
+                        promises: promises.map((p) => ({ kind: p.kind, text: p.text })),
+                      }),
+                    })
                   }}
                 >
                   ส่งเข้าคิววางแผน

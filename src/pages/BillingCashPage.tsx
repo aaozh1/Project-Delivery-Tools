@@ -1,4 +1,5 @@
-import { useState, type CSSProperties } from 'react'
+import { useEffect, useState, type CSSProperties } from 'react'
+import { tryApi } from '../api/client'
 import { Button, MoneyFigure, PhaseStatusPill, StatusMark } from '../components'
 import { STATUS, type RiskLevel } from '../lib/status'
 import { baht, bahtAbbrev } from '../lib/format'
@@ -631,8 +632,20 @@ function ReceivedThisMonth({ items }: { items: BillingItem[] }) {
 export function BillingCashPage() {
   const [items, setItems] = useState<BillingItem[]>(INITIAL_BILLING_ITEMS)
 
-  /** อนุมัติแล้ว → วางบิลแล้ว (เดินหน้าทางเดียวตามสถานะงวด 6 ขั้น) */
-  const billItem = (id: string) =>
+  /* โหลด ledger จากเซิร์ฟเวอร์ (ไม่มีเซิร์ฟเวอร์ = mock เดิม) */
+  useEffect(() => {
+    let cancelled = false
+    void (async () => {
+      const res = await tryApi<{ items: BillingItem[] }>('/api/billing')
+      if (!cancelled && res) setItems(res.items)
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  /** อนุมัติแล้ว → วางบิลแล้ว (เดินหน้าทางเดียวตามสถานะงวด 6 ขั้น) · เขียนที่เซิร์ฟเวอร์ + audit */
+  const billItem = (id: string) => {
     setItems((prev) =>
       prev.map((it) =>
         it.id === id && it.stage === 'approved'
@@ -640,9 +653,13 @@ export function BillingCashPage() {
           : it,
       ),
     )
+    void tryApi<{ item: BillingItem }>(`/api/billing/${id}/bill`, { method: 'POST' }).then((res) => {
+      if (res) setItems((prev) => prev.map((it) => (it.id === id ? res.item : it)))
+    })
+  }
 
-  /** วางบิลแล้ว → รับเงินแล้ว */
-  const receiveItem = (id: string) =>
+  /** วางบิลแล้ว → รับเงินแล้ว · เขียนที่เซิร์ฟเวอร์ + audit */
+  const receiveItem = (id: string) => {
     setItems((prev) =>
       prev.map((it) =>
         it.id === id && it.stage === 'billed'
@@ -650,6 +667,10 @@ export function BillingCashPage() {
           : it,
       ),
     )
+    void tryApi<{ item: BillingItem }>(`/api/billing/${id}/receive`, { method: 'POST' }).then((res) => {
+      if (res) setItems((prev) => prev.map((it) => (it.id === id ? res.item : it)))
+    })
+  }
 
   return (
     <div
