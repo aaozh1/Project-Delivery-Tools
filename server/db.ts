@@ -52,7 +52,26 @@ CREATE TABLE IF NOT EXISTS projects (
   progress_pct INTEGER NOT NULL,
   used_pct INTEGER NOT NULL,
   delay_us INTEGER NOT NULL,
-  delay_client INTEGER NOT NULL
+  delay_client INTEGER NOT NULL,
+  -- วงจรชีวิตโครงการ: planning (รอ/กำลังวางแผน) → in_review (ส่ง HoD แล้ว) → active → closed
+  status TEXT NOT NULL DEFAULT 'active',
+  -- งบคน-สัปดาห์ของทั้งโครงการ และคน-สัปดาห์ที่ใช้ไปก่อนช่วงที่มีตารางจัดสรรในระบบ
+  budget_pw REAL NOT NULL DEFAULT 0,
+  base_used_pw REAL NOT NULL DEFAULT 0
+);
+-- แผนงวดงานที่ Senior ส่งรีวิว (S3 → S5) — งวดเก็บเป็น JSON จนกว่าจะอนุมัติ
+CREATE TABLE IF NOT EXISTS plans (
+  id INTEGER PRIMARY KEY,
+  project_code TEXT NOT NULL,
+  phases TEXT NOT NULL,
+  total_pw REAL NOT NULL,
+  margin_pct REAL NOT NULL,
+  status TEXT NOT NULL DEFAULT 'proposed' CHECK (status IN ('proposed','approved','rejected')),
+  submitted_by TEXT NOT NULL,
+  submitted_at TEXT NOT NULL DEFAULT (datetime('now')),
+  decided_by TEXT,
+  decided_at TEXT,
+  reason TEXT
 );
 CREATE TABLE IF NOT EXISTS phases (
   id INTEGER PRIMARY KEY,
@@ -132,6 +151,20 @@ CREATE TABLE IF NOT EXISTS handoff_briefs (
 );
 `)
 
+/* migration เบา ๆ สำหรับ DB เก่าที่สร้างก่อนมีคอลัมน์ lifecycle (ไฟล์ DB เป็น ephemeral อยู่แล้ว) */
+for (const stmt of [
+  "ALTER TABLE projects ADD COLUMN status TEXT NOT NULL DEFAULT 'active'",
+  'ALTER TABLE projects ADD COLUMN budget_pw REAL NOT NULL DEFAULT 0',
+  'ALTER TABLE projects ADD COLUMN base_used_pw REAL NOT NULL DEFAULT 0',
+  'ALTER TABLE handoff_briefs ADD COLUMN project_code TEXT',
+]) {
+  try {
+    db.exec(stmt)
+  } catch {
+    /* มีคอลัมน์แล้ว */
+  }
+}
+
 const seeded = db.prepare('SELECT COUNT(*) AS n FROM staff').get() as { n: number }
 if (seeded.n === 0) seed()
 
@@ -172,8 +205,8 @@ function seed() {
   // โครงการชุดเดียวกับ src/data/projects.ts
   const insProject = db.prepare(
     `INSERT INTO projects (code, name, client, bd, line, squad, contract_value,
-      current_phase, progress_pct, used_pct, delay_us, delay_client)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      current_phase, progress_pct, used_pct, delay_us, delay_client, status, budget_pw, base_used_pw)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
   )
   const insPhase = db.prepare(
     `INSERT INTO phases (project_code, no, name, weight_pct, value, status, revision_quota, revision_used)
@@ -182,11 +215,11 @@ function seed() {
 
   type PhaseSeed = [number, string, number, number, string, number, number]
   const projects: Array<{
-    row: [string, string, string, string, string, string, number, number, number, number, number, number]
+    row: [string, string, string, string, string, string, number, number, number, number, number, number, string, number, number]
     phases: PhaseSeed[]
   }> = [
     {
-      row: ['ID-2026-004', 'Café ทองหล่อ', 'บจก. ทองหล่อ ฮอสพิทาลิตี้', 'คุณบี', 'ID', 'A', 3000000, 3, 45, 132, 9, 4],
+      row: ['ID-2026-004', 'Café ทองหล่อ', 'บจก. ทองหล่อ ฮอสพิทาลิตี้', 'คุณบี', 'ID', 'A', 3000000, 3, 45, 132, 9, 4, 'active', 30, 36.6],
       phases: [
         [1, 'Concept', 20, 600000, 'paid', 2, 1],
         [2, 'DD + 3D', 30, 900000, 'paid', 2, 2],
@@ -195,7 +228,7 @@ function seed() {
       ],
     },
     {
-      row: ['AR-2025-011', 'อาคารสำนักงานพระราม 9', 'บจก. พระราม 9 ดีเวลลอปเมนท์', 'คุณบี', 'AR', 'C', 6000000, 4, 78, 74, 0, 12],
+      row: ['AR-2025-011', 'อาคารสำนักงานพระราม 9', 'บจก. พระราม 9 ดีเวลลอปเมนท์', 'คุณบี', 'AR', 'C', 6000000, 4, 78, 74, 0, 12, 'active', 60, 44.4],
       phases: [
         [1, 'Conceptual', 15, 900000, 'paid', 2, 1],
         [2, 'Schematic', 20, 1200000, 'paid', 2, 2],
@@ -205,7 +238,7 @@ function seed() {
       ],
     },
     {
-      row: ['AR-2026-002', 'โกดังบางนา', 'บจก. บางนา โลจิสติกส์', 'คุณเบล', 'AR', 'C', 4200000, 2, 38, 71, 3, 18],
+      row: ['AR-2026-002', 'โกดังบางนา', 'บจก. บางนา โลจิสติกส์', 'คุณเบล', 'AR', 'C', 4200000, 2, 38, 71, 3, 18, 'active', 40, 28.4],
       phases: [
         [1, 'Conceptual', 15, 630000, 'paid', 2, 1],
         [2, 'Schematic', 20, 840000, 'in-progress', 2, 1],
@@ -215,7 +248,7 @@ function seed() {
       ],
     },
     {
-      row: ['HS-2026-007', 'บ้านคุณสมชาย ทองหล่อ', 'คุณสมชาย', 'คุณบี', 'HS', 'D', 1800000, 1, 18, 14, 0, 0],
+      row: ['HS-2026-007', 'บ้านคุณสมชาย ทองหล่อ', 'คุณสมชาย', 'คุณบี', 'HS', 'D', 1800000, 1, 18, 14, 0, 0, 'active', 49, 6.9],
       phases: [
         [1, 'Concept Design', 20, 360000, 'in-progress', 2, 0],
         [2, 'DD + 3D', 30, 540000, 'not-started', 2, 0],
@@ -224,7 +257,7 @@ function seed() {
       ],
     },
     {
-      row: ['GR-2026-014', 'Rebrand XYZ', 'บจก. XYZ กรุ๊ป', 'คุณเบล', 'GR', 'F', 850000, 2, 60, 52, 0, 2],
+      row: ['GR-2026-014', 'Rebrand XYZ', 'บจก. XYZ กรุ๊ป', 'คุณเบล', 'GR', 'F', 850000, 2, 60, 52, 0, 2, 'active', 12, 6.2],
       phases: [
         [1, 'Brief + Concept', 30, 255000, 'paid', 2, 1],
         [2, 'Design Development', 40, 340000, 'delivered', 2, 2],
@@ -232,13 +265,18 @@ function seed() {
       ],
     },
     {
-      row: ['ID-2026-009', 'สำนักงาน BTS อโศก', 'บจก. อโศก แคปปิตอล', 'คุณบี', 'ID', 'A', 2500000, 2, 41, 41, 0, 0],
+      row: ['ID-2026-009', 'สำนักงาน BTS อโศก', 'บจก. อโศก แคปปิตอล', 'คุณบี', 'ID', 'A', 2500000, 2, 41, 41, 0, 0, 'active', 32, 10.4],
       phases: [
         [1, 'Concept', 20, 500000, 'paid', 2, 1],
         [2, 'DD + 3D', 30, 750000, 'in-progress', 2, 3],
         [3, 'Working Drawing + FF&E', 35, 875000, 'not-started', 2, 0],
         [4, 'Site Supervision', 15, 375000, 'not-started', 1, 0],
       ],
+    },
+    {
+      // โครงการที่แผนกำลังรอ HoD รีวิว — ผูกกับ narrative ของ S5 (แผนงาน ID-2026-011 Margin 18%)
+      row: ['ID-2026-011', 'ร้านค้าปลีก สยาม', 'บจก. สยาม รีเทล', 'คุณบี', 'ID', 'A', 1200000, 0, 0, 0, 0, 0, 'in_review', 36, 0],
+      phases: [],
     },
   ]
 
@@ -249,6 +287,23 @@ function seed() {
     }
   })
   tx()
+
+  // แผนของ ID-2026-011 ที่คุณเอส่งรีวิวไว้ (ตัวเลขชุดเดียวกับหน้า S5)
+  db.prepare(
+    `INSERT INTO plans (project_code, phases, total_pw, margin_pct, status, submitted_by, submitted_at)
+     VALUES (?, ?, ?, ?, 'proposed', ?, datetime('now', '-4 days'))`,
+  ).run(
+    'ID-2026-011',
+    JSON.stringify([
+      { no: 1, name: 'Concept', weightPct: 20, value: 240000, pw: { sr: 1.5, mid: 2.5, jr: 2.5 } },
+      { no: 2, name: 'DD + 3D', weightPct: 30, value: 360000, pw: { sr: 2.5, mid: 4.5, jr: 4.5 } },
+      { no: 3, name: 'Working Drawing + FF&E', weightPct: 35, value: 420000, pw: { sr: 2.5, mid: 5.0, jr: 5.5 } },
+      { no: 4, name: 'Site Supervision', weightPct: 15, value: 180000, pw: { sr: 1.5, mid: 2.0, jr: 1.5 } },
+    ]),
+    36,
+    18.0,
+    'คุณเอ',
+  )
 
   // การจัดสรร Squad A — ชุดเดียวกับ src/pages/allocate/data.ts (สัปดาห์ 31 = LAST_WEEK, 32 = ปัจจุบัน)
   const allocMembers = ['คุณเอ', 'คุณซี', 'คุณดี', 'คุณอี']
