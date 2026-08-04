@@ -13,9 +13,18 @@ DPM (Design Project Manager) — ระบบควบคุมโครงก�
 ## คำสั่ง
 
 ```bash
-npm run dev      # dev server
-npm run build    # tsc -b && vite build — ต้องผ่านก่อน commit
+npm run dev:full   # API + หน้าเว็บพร้อมกัน (โหมดปกติ)
+npm run dev        # หน้าเว็บอย่างเดียว — ทุกหน้า fallback เป็น mock ได้
+npm run server     # API อย่างเดียว (Express + SQLite · server/dpm.sqlite สร้าง+seed อัตโนมัติ)
+npm run build      # tsc -b && vite build — type-check ทั้ง app และ server ต้องผ่านก่อน commit
 ```
+
+## Backend (`server/`)
+
+- `server/db.ts` schema + seed (ข้อมูลชุดเดียวกับ `src/data/projects.ts`) · `server/index.ts` API ทั้งหมด
+- **สิทธิ์ enforce ที่นี่เป็นหลัก** ตามตาราง §5: Designer ได้ payload ที่เงินเป็น null · BD ถูกกรองโครงการ · endpoint หวงห้ามตอบ 403 พร้อม `reason`+`contact` (client แสดงเป็น NoAccess ไม่ใช่ error แดง) · การเปิดดูเรต/แก้กฎเขียน `audit_log`
+- ฝั่ง client เรียกผ่าน `src/api/client.ts` (`tryApi` — คืน null เมื่อไม่มีเซิร์ฟเวอร์ ให้ fallback mock เสมอ) · แบบแผนการ wire หน้าดูได้จาก `useProjects` (src/api/hooks.ts), `RatesView`, `AdminConsolePage`
+- endpoint ใหม่ต้อง: ตรวจ session → ตรวจบทบาท → กรอง/ตัดข้อมูลตามขอบเขต → เขียน audit เมื่อเป็นการกระทำอ่อนไหว
 
 ## แนวทางโค้ด
 
@@ -30,6 +39,11 @@ npm run build    # tsc -b && vite build — ต้องผ่านก่อน
 
 ## งานถัดไป
 
-implement หน้าจอทีละหน้าตามลำดับ **S1 → S3 → S6 → S7 → S2 → S11 → S13 → S14** (ดู `src/pages/screens.ts`)
-โดยแทนที่ `PlaceholderPage` ในแต่ละ route ด้วยหน้าจริง อ่านสเปกหน้านั้นจาก handoff README + เปิด prototype เทียบ
-ยังไม่มี data layer — เริ่มจาก mock data ใน module แยก แล้วค่อยต่อ backend (สิทธิ์ต้อง enforce ฝั่ง server ด้วยเมื่อถึงตอนนั้น)
+หน้าจอครบทั้ง 15 หน้า (P0 ทั้ง 8 + P1/P2 ทั้ง 7) — ดู route ใน `src/App.tsx` · ทะเบียนหน้าอยู่ใน `src/pages/screens.ts`
+สิทธิ์ระดับ route อยู่ที่ `src/auth/roles.ts` (SCREEN_ACCESS ตามตาราง §5) มีตัวสลับบทบาทที่มุมขวาบนสำหรับทดลองมุมมอง
+mock data: ทะเบียนโครงการกลางที่หลายหน้าใช้ร่วมอยู่ที่ `src/data/projects.ts` · ของเฉพาะหน้าอยู่ `src/pages/*/data.ts` หรือ constant ในไฟล์ พร้อม comment ที่มาของค่า
+
+ที่เหลือ (ต้องมี backend infrastructure ก่อน):
+1. **Backend + data layer จริง** — API + DB ตามโครงภาคผนวก C · แทน mock ทุกไฟล์ · เกณฑ์ธุรกิจทุกค่าอ่านจาก Business Rules (S11) ไม่ hardcode
+2. **Auth จริง + enforce ฝั่ง server** — ชั้นสิทธิ์ปัจจุบัน (`src/auth/`) คุมเฉพาะการแสดงผล ฝั่ง server ต้องตรวจซ้ำทุก request · กติกา Squad บังคับที่ backend · `cost_rate` รายคนเห็นได้เฉพาะ HoPD และการเปิดดูต้องเขียน Audit Log จริง
+3. **Real-time** เฉพาะจุดที่ handoff ระบุ: Live Margin Panel (S3) และ Allocation Grid (S6)

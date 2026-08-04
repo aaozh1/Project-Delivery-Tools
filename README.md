@@ -10,11 +10,20 @@
 
 ```bash
 npm install
-npm run dev      # เปิด dev server
-npm run build    # type-check + build production
+npm run dev:full   # API (พอร์ต 3001) + หน้าเว็บ พร้อมกัน — โหมดปกติ
+npm run dev        # หน้าเว็บอย่างเดียว (ไม่มีเซิร์ฟเวอร์ → fallback เป็น mock ฝั่ง client)
+npm run server     # API อย่างเดียว
+npm run build      # type-check (app + server) + build production
 ```
 
-Stack: Vite · React 18 · TypeScript · React Router · ฟอนต์ IBM Plex Sans Thai / IBM Plex Mono (self-host ผ่าน Fontsource)
+Stack: Vite · React 18 · TypeScript · React Router · Express + SQLite (better-sqlite3) · ฟอนต์ IBM Plex Sans Thai / IBM Plex Mono (self-host ผ่าน Fontsource)
+
+**Backend (`server/`)**: API + SQLite (สร้าง+seed อัตโนมัติที่ `server/dpm.sqlite` ตอนสตาร์ท) —
+ที่ enforce ตารางสิทธิ์ §5 ของจริง: dev-login เป็น session cookie ต่อบทบาท ·
+Designer ได้ payload โครงการที่ตัวเลขเงินถูกตัดออกฝั่งเซิร์ฟเวอร์ · BD เห็นเฉพาะโครงการลูกค้าตน ·
+Business Rules แก้ได้เฉพาะ HoPD · เรตค่าแรงเปิดดูได้เฉพาะ HoPD ทีละแถวและทุกครั้งเขียน Audit Log ·
+เมนู Audit Log ใน Admin Console อ่านบันทึกจริงจากเซิร์ฟเวอร์
+หน้าเว็บทำงานได้แม้ไม่มีเซิร์ฟเวอร์ (fallback เป็น mock — มีป้ายบอกโหมด)
 
 ## โครงสร้าง
 
@@ -43,18 +52,23 @@ src/
 ## สถานะการพัฒนา
 
 - [x] Design system: tokens · ฟอนต์ · component พื้นฐานทุกสถานะ · app shell + routing
-- [ ] S1 Portfolio Control Room
-- [ ] S3 Project Plan Workspace
-- [ ] S6 จัดสรรกำลังคน
-- [ ] S7 ภาระงานรายบุคคล
-- [ ] S2 Department Board
-- [ ] S11 Admin Console
-- [ ] S13 บันทึกงานรายสัปดาห์
-- [ ] S14 Growth Profile
-- [ ] Data layer จริง (ตอนนี้ยังไม่มี backend — component รับ props ล้วน)
+- [x] S1 Portfolio Control Room (`/` และ `/portfolio`)
+- [x] S3 Project Plan Workspace (`/plan`)
+- [x] S6 จัดสรรกำลังคน (`/allocate`)
+- [x] S7 ภาระงานรายบุคคล (`/workload`)
+- [x] S2 Department Board (`/department`)
+- [x] S11 Admin Console (`/admin`)
+- [x] S13 บันทึกงานรายสัปดาห์ (`/weekly-log`)
+- [x] S14 Growth Profile (`/growth`)
+- [x] S0 Handoff Form (`/handoff`) · S4 Project Detail (`/project`) · S5 Review & Approval (`/review`)
+- [x] S8 VO & Revision Log (`/vo`) · S9 Billing & Cash (`/finance`) · S10 Closeout Report (`/closeout`) · S12 BD Portal (`/bd`)
+- [x] ชั้นสิทธิ์ตามตาราง §5: `src/auth/` + route guard + ตัวสลับบทบาท 6 บทบาท + หน้าแรกตามบทบาท
+- [x] ทะเบียนโครงการกลาง `src/data/projects.ts` ใช้ร่วมกันข้ามหน้า
+- [x] Backend: Express + SQLite (`server/`) — session ต่อบทบาท · enforce สิทธิ์ฝั่ง server (ตัดข้อมูลเงินของ Designer, ขอบเขต BD, 403 พร้อมเหตุผล+ผู้ติดต่อ) · Business Rules อ่าน/เขียนผ่าน API · เรตค่าแรง reveal ทีละแถว + Audit Log จริง · เมนู Audit Log ใน S11
+- [ ] ขยาย API ให้ครอบหน้าที่เหลือ (จัดสรรคน, VO, billing, weekly log ฯลฯ — ตอนนี้หน้าเหล่านั้นยังใช้ mock ฝั่ง client ตามแบบแผน `useProjects`/`tryApi` ที่วางไว้)
+- [ ] Auth จริง (SSO/รหัสผ่าน) แทน dev-login ต่อบทบาท · ย้าย SQLite → PostgreSQL เมื่อขึ้น production
 
-ลำดับ implement หน้าจอ: **S1 → S3 → S6 → S7 → S2 → S11 → S13 → S14**
-สเปกละเอียดของแต่ละหน้าอยู่ใน `docs/design-handoff/README.md` และ prototype `.dc.html`
+สเปกละเอียดของหน้า P0 อยู่ใน `docs/design-handoff/README.md` + prototype `.dc.html` · หน้า P1/P2 ที่ไม่มี prototype ออกแบบตาม design system + brief
 
 ## กติกาที่ต้องคงไว้เสมอ (สรุปจาก handoff)
 

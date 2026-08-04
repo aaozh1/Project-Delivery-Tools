@@ -1,5 +1,6 @@
 node_modules/
 dist/
+server/dpm.sqlite*
 *.local
 .DS_Store
 npm-debug.log*
