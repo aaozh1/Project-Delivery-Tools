@@ -43,17 +43,18 @@ src/
 ## สถานะการพัฒนา
 
 - [x] Design system: tokens · ฟอนต์ · component พื้นฐานทุกสถานะ · app shell + routing
-- [ ] S1 Portfolio Control Room
-- [ ] S3 Project Plan Workspace
-- [ ] S6 จัดสรรกำลังคน
-- [ ] S7 ภาระงานรายบุคคล
-- [ ] S2 Department Board
-- [ ] S11 Admin Console
-- [ ] S13 บันทึกงานรายสัปดาห์
-- [ ] S14 Growth Profile
-- [ ] Data layer จริง (ตอนนี้ยังไม่มี backend — component รับ props ล้วน)
+- [x] S1 Portfolio Control Room (`/` และ `/portfolio`)
+- [x] S3 Project Plan Workspace (`/plan`)
+- [x] S6 จัดสรรกำลังคน (`/allocate`)
+- [x] S7 ภาระงานรายบุคคล (`/workload`)
+- [x] S2 Department Board (`/department`)
+- [x] S11 Admin Console (`/admin`)
+- [x] S13 บันทึกงานรายสัปดาห์ (`/weekly-log`)
+- [x] S14 Growth Profile (`/growth`)
+- [ ] Data layer จริง (ตอนนี้เป็น mock data ใน `src/pages/*/data.ts` — component รับ props ล้วน)
+- [ ] Auth + enforce สิทธิ์ฝั่ง server (ตาราง §5 ของ brief — กติกา Squad ต้องบังคับที่ backend ด้วย)
+- [ ] หน้า P1/P2 ที่เหลือนอก handoff: S0 Handoff · S4 Project Detail · S5 Review · S8 VO · S9 Billing · S10 Closeout · S12 BD Portal
 
-ลำดับ implement หน้าจอ: **S1 → S3 → S6 → S7 → S2 → S11 → S13 → S14**
 สเปกละเอียดของแต่ละหน้าอยู่ใน `docs/design-handoff/README.md` และ prototype `.dc.html`
 
 ## กติกาที่ต้องคงไว้เสมอ (สรุปจาก handoff)

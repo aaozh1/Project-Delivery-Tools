@@ -30,6 +30,10 @@ npm run build    # tsc -b && vite build — ต้องผ่านก่อน
 
 ## งานถัดไป
 
-implement หน้าจอทีละหน้าตามลำดับ **S1 → S3 → S6 → S7 → S2 → S11 → S13 → S14** (ดู `src/pages/screens.ts`)
-โดยแทนที่ `PlaceholderPage` ในแต่ละ route ด้วยหน้าจริง อ่านสเปกหน้านั้นจาก handoff README + เปิด prototype เทียบ
-ยังไม่มี data layer — เริ่มจาก mock data ใน module แยก แล้วค่อยต่อ backend (สิทธิ์ต้อง enforce ฝั่ง server ด้วยเมื่อถึงตอนนั้น)
+หน้าจอทั้ง 8 หน้า (S1 S3 S6 S7 S2 S11 S13 S14) implement ครบแล้ว — ดู route ใน `src/App.tsx`
+mock data อยู่ใน `src/pages/*/data.ts` หรือ constant ในไฟล์หน้า พร้อม comment ระบุที่มาของค่า
+
+ที่เหลือ:
+1. **Data layer จริง** — แทน mock ด้วย API + state จริง · เกณฑ์ธุรกิจทุกค่าต้องอ่านจาก Business Rules (S11) ไม่ hardcode
+2. **Auth + สิทธิ์** — enforce ตารางสิทธิ์ §5 ของ brief ฝั่ง server ด้วย (กติกา Squad ไม่ใช่แค่ซ่อนปุ่ม) · `cost_rate` รายคนเห็นได้เฉพาะ HoPD และการเปิดดูต้องเขียน Audit Log
+3. **หน้า P1/P2 นอก handoff** — S0 · S4 · S5 · S8 · S9 · S10 · S12 (ยังเป็น PlaceholderPage / ยังไม่มี design)
