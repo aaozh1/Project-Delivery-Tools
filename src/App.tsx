@@ -1,4 +1,5 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import { RoleProvider } from './auth/RoleContext'
 import { AppShell } from './shell/AppShell'
 import { HomePage } from './pages/HomePage'
 import { DesignSystemPage } from './pages/DesignSystemPage'
@@ -27,6 +28,14 @@ const PAGES: Record<string, React.ComponentType> = {
 export function App() {
   return (
     <BrowserRouter>
+      <AppRoutes />
+    </BrowserRouter>
+  )
+}
+
+function AppRoutes() {
+  return (
+    <RoleProvider>
       <Routes>
         <Route element={<AppShell />}>
           {/* หน้าแรก = Portfolio Control Room (หน้าที่ HoPD เปิดทุกเช้า) */}
@@ -45,6 +54,6 @@ export function App() {
           })}
         </Route>
       </Routes>
-    </BrowserRouter>
+    </RoleProvider>
   )
 }
