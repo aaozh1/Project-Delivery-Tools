@@ -30,10 +30,11 @@ npm run build    # tsc -b && vite build — ต้องผ่านก่อน
 
 ## งานถัดไป
 
-หน้าจอทั้ง 8 หน้า (S1 S3 S6 S7 S2 S11 S13 S14) implement ครบแล้ว — ดู route ใน `src/App.tsx`
-mock data อยู่ใน `src/pages/*/data.ts` หรือ constant ในไฟล์หน้า พร้อม comment ระบุที่มาของค่า
+หน้าจอครบทั้ง 15 หน้า (P0 ทั้ง 8 + P1/P2 ทั้ง 7) — ดู route ใน `src/App.tsx` · ทะเบียนหน้าอยู่ใน `src/pages/screens.ts`
+สิทธิ์ระดับ route อยู่ที่ `src/auth/roles.ts` (SCREEN_ACCESS ตามตาราง §5) มีตัวสลับบทบาทที่มุมขวาบนสำหรับทดลองมุมมอง
+mock data: ทะเบียนโครงการกลางที่หลายหน้าใช้ร่วมอยู่ที่ `src/data/projects.ts` · ของเฉพาะหน้าอยู่ `src/pages/*/data.ts` หรือ constant ในไฟล์ พร้อม comment ที่มาของค่า
 
-ที่เหลือ:
-1. **Data layer จริง** — แทน mock ด้วย API + state จริง · เกณฑ์ธุรกิจทุกค่าต้องอ่านจาก Business Rules (S11) ไม่ hardcode
-2. **Auth + สิทธิ์** — enforce ตารางสิทธิ์ §5 ของ brief ฝั่ง server ด้วย (กติกา Squad ไม่ใช่แค่ซ่อนปุ่ม) · `cost_rate` รายคนเห็นได้เฉพาะ HoPD และการเปิดดูต้องเขียน Audit Log
-3. **หน้า P1/P2 นอก handoff** — S0 · S4 · S5 · S8 · S9 · S10 · S12 (ยังเป็น PlaceholderPage / ยังไม่มี design)
+ที่เหลือ (ต้องมี backend infrastructure ก่อน):
+1. **Backend + data layer จริง** — API + DB ตามโครงภาคผนวก C · แทน mock ทุกไฟล์ · เกณฑ์ธุรกิจทุกค่าอ่านจาก Business Rules (S11) ไม่ hardcode
+2. **Auth จริง + enforce ฝั่ง server** — ชั้นสิทธิ์ปัจจุบัน (`src/auth/`) คุมเฉพาะการแสดงผล ฝั่ง server ต้องตรวจซ้ำทุก request · กติกา Squad บังคับที่ backend · `cost_rate` รายคนเห็นได้เฉพาะ HoPD และการเปิดดูต้องเขียน Audit Log จริง
+3. **Real-time** เฉพาะจุดที่ handoff ระบุ: Live Margin Panel (S3) และ Allocation Grid (S6)

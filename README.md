@@ -51,11 +51,14 @@ src/
 - [x] S11 Admin Console (`/admin`)
 - [x] S13 บันทึกงานรายสัปดาห์ (`/weekly-log`)
 - [x] S14 Growth Profile (`/growth`)
-- [ ] Data layer จริง (ตอนนี้เป็น mock data ใน `src/pages/*/data.ts` — component รับ props ล้วน)
-- [ ] Auth + enforce สิทธิ์ฝั่ง server (ตาราง §5 ของ brief — กติกา Squad ต้องบังคับที่ backend ด้วย)
-- [ ] หน้า P1/P2 ที่เหลือนอก handoff: S0 Handoff · S4 Project Detail · S5 Review · S8 VO · S9 Billing · S10 Closeout · S12 BD Portal
+- [x] S0 Handoff Form (`/handoff`) · S4 Project Detail (`/project`) · S5 Review & Approval (`/review`)
+- [x] S8 VO & Revision Log (`/vo`) · S9 Billing & Cash (`/finance`) · S10 Closeout Report (`/closeout`) · S12 BD Portal (`/bd`)
+- [x] ชั้นสิทธิ์ตามตาราง §5: `src/auth/` + route guard + ตัวสลับบทบาท 6 บทบาท + หน้าแรกตามบทบาท
+- [x] ทะเบียนโครงการกลาง `src/data/projects.ts` ใช้ร่วมกันข้ามหน้า
+- [ ] Backend จริง: API + DB + auth — สิทธิ์ปัจจุบันคุมเฉพาะฝั่ง client เมื่อมี server ต้อง enforce ซ้ำทุก request (โดยเฉพาะ `cost_rate` และกติกา Squad)
+- [ ] แทน mock (`src/pages/*/data.ts`) ด้วย data layer จริง · เกณฑ์ธุรกิจอ่านจาก S11 แทน constant
 
-สเปกละเอียดของแต่ละหน้าอยู่ใน `docs/design-handoff/README.md` และ prototype `.dc.html`
+สเปกละเอียดของหน้า P0 อยู่ใน `docs/design-handoff/README.md` + prototype `.dc.html` · หน้า P1/P2 ที่ไม่มี prototype ออกแบบตาม design system + brief
 
 ## กติกาที่ต้องคงไว้เสมอ (สรุปจาก handoff)
 
