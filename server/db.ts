@@ -75,6 +75,61 @@ CREATE TABLE IF NOT EXISTS audit_log (
   detail TEXT,
   at TEXT NOT NULL DEFAULT (datetime('now'))
 );
+-- การจัดสรรรายสัปดาห์ — แหล่งเดียวของ COL จริง (brief: WeeklyAllocation · ไม่มี TimeEntry)
+CREATE TABLE IF NOT EXISTS weekly_allocations (
+  week INTEGER NOT NULL,
+  member TEXT NOT NULL,
+  project_code TEXT NOT NULL,
+  person_weeks REAL NOT NULL,
+  PRIMARY KEY (week, member, project_code)
+);
+CREATE TABLE IF NOT EXISTS variation_orders (
+  id TEXT PRIMARY KEY,
+  project_code TEXT NOT NULL,
+  source TEXT NOT NULL CHECK (source IN ('revision_over_quota','client_request','scope_gap')),
+  detail TEXT NOT NULL,
+  person_weeks REAL NOT NULL,
+  status TEXT NOT NULL CHECK (status IN ('proposed','billable','goodwill','rejected')),
+  agreed_value INTEGER,
+  reason TEXT,
+  decided_by TEXT,
+  decided_date TEXT,
+  linked_phase TEXT,
+  submitted_by TEXT NOT NULL,
+  submitted_date TEXT NOT NULL
+);
+-- มุมมองการเก็บเงินของ S9 (DPM ไม่ใช่ระบบบัญชี — ตัวเลขต้องตรงกับใบกำกับภาษีในระบบบัญชีหลัก)
+CREATE TABLE IF NOT EXISTS invoices (
+  id TEXT PRIMARY KEY,
+  code TEXT NOT NULL,
+  project TEXT NOT NULL,
+  client TEXT NOT NULL,
+  phase_no INTEGER NOT NULL,
+  phase_name TEXT NOT NULL,
+  value INTEGER NOT NULL,
+  stage TEXT NOT NULL CHECK (stage IN ('approved','billed','paid')),
+  waiting_days INTEGER NOT NULL DEFAULT 0,
+  billed_on TEXT,
+  aging_days INTEGER NOT NULL DEFAULT 0,
+  billed_this_month INTEGER NOT NULL DEFAULT 0,
+  paid_on TEXT,
+  paid_this_month INTEGER NOT NULL DEFAULT 0
+);
+-- HandoffBrief จาก BD (brief ภาคผนวก C) — Promise List เก็บเป็น JSON
+CREATE TABLE IF NOT EXISTS handoff_briefs (
+  id INTEGER PRIMARY KEY,
+  client TEXT NOT NULL,
+  project_name TEXT NOT NULL,
+  line TEXT,
+  contract_value INTEGER,
+  squad TEXT,
+  revision_rounds TEXT,
+  due_date TEXT,
+  note TEXT,
+  promises TEXT NOT NULL,
+  submitted_by TEXT NOT NULL,
+  at TEXT NOT NULL DEFAULT (datetime('now'))
+);
 `)
 
 const seeded = db.prepare('SELECT COUNT(*) AS n FROM staff').get() as { n: number }
@@ -194,4 +249,75 @@ function seed() {
     }
   })
   tx()
+
+  // การจัดสรร Squad A — ชุดเดียวกับ src/pages/allocate/data.ts (สัปดาห์ 31 = LAST_WEEK, 32 = ปัจจุบัน)
+  const allocMembers = ['คุณเอ', 'คุณซี', 'คุณดี', 'คุณอี']
+  const allocProjects = ['ID-2026-004', 'ID-2026-009', 'ID-2026-011']
+  const week31 = [
+    [0.5, 0.5, 0],
+    [0.5, 0.25, 0.25],
+    [0, 0.5, 0.25],
+    [0.5, 0, 0.25],
+  ]
+  const week32 = [
+    [0.5, 0.5, 0],
+    [0.5, 0.5, 0.25],
+    [0, 0.5, 0.25],
+    [0.5, 0, 0.5],
+  ]
+  const insAlloc = db.prepare(
+    'INSERT INTO weekly_allocations (week, member, project_code, person_weeks) VALUES (?, ?, ?, ?)',
+  )
+  for (const [week, grid] of [
+    [31, week31],
+    [32, week32],
+  ] as const) {
+    grid.forEach((row, i) =>
+      row.forEach((pw, j) => insAlloc.run(week, allocMembers[i], allocProjects[j], pw)),
+    )
+  }
+
+  // VO ตั้งต้น — ชุดเดียวกับ src/pages/vo/data.ts (INITIAL_VOS)
+  const insVo = db.prepare(
+    `INSERT INTO variation_orders (id, project_code, source, detail, person_weeks, status,
+      agreed_value, reason, decided_by, decided_date, linked_phase, submitted_by, submitted_date)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+  )
+  insVo.run('VO-2026-018', 'ID-2026-004', 'client_request',
+    'ลูกค้าขอเพิ่มแบบบาร์กาแฟชั้นลอย + งานไฟพิเศษเหนือเคาน์เตอร์ (นอกแบบ Concept ที่อนุมัติ)',
+    3.0, 'proposed', null, null, null, null, null, 'คุณเอ', '30 ก.ค. 2569')
+  insVo.run('VO-2026-017', 'AR-2026-002', 'client_request',
+    'เพิ่มแบบสำนักงานหน้าโกดัง 120 ตร.ม. พร้อมโครงสร้างเบา — ลูกค้าขอหลังเห็น Schematic',
+    2.5, 'proposed', null, null, null, null, null, 'คุณเค', '28 ก.ค. 2569')
+  insVo.run('VO-2026-016', 'AR-2025-011', 'scope_gap',
+    'แบบขยายภูมิทัศน์ลานหน้าอาคาร — สัญญาเดิมระบุขอบเขตเฉพาะตัวอาคาร',
+    4.5, 'billable', 120000, null, 'คุณณัฐพงศ์ (HoPD)', '22 ก.ค. 2569', null, 'คุณเค', '15 ก.ค. 2569')
+  insVo.run('VO-2026-015', 'GR-2026-014', 'client_request',
+    'เพิ่ม brand guideline ฉบับ social media 12 template นอกขอบเขต Final Artwork',
+    1.75, 'goodwill', null, 'ลูกค้าสัญญาระยะยาว — ลงทุนรักษาความสัมพันธ์', 'คุณกิตติ (HoD)', '8 ก.ค. 2569', null, 'คุณเอฟ', '5 ก.ค. 2569')
+  insVo.run('VO-2026-014', 'HS-2026-007', 'scope_gap',
+    'ขอปรับแบบจากบ้าน 2 ชั้นเป็น 3 ชั้น หลังอนุมัติ Concept แล้ว',
+    6.0, 'rejected', null, 'เกินขอบเขตของ VO — เสนอเป็นสัญญาแก้ไขเพิ่มเติม (Amendment) แทน', 'คุณณัฐพงศ์ (HoPD)', '25 มิ.ย. 2569', null, 'คุณดี', '20 มิ.ย. 2569')
+  insVo.run('VO-2026-012', 'AR-2025-011', 'revision_over_quota',
+    'รอบแก้ที่ 3 งวด Schematic (เกินโควตา 1 รอบ) — ปรับ façade ตามข้อสังเกตลูกค้า',
+    2.0, 'goodwill', null, 'ต้นเหตุจากแบบรีวิวภายในคลาดเคลื่อน — บริษัทรับผิดชอบเอง', 'คุณณัฐพงศ์ (HoPD)', '12 มิ.ย. 2569', 'AR-2025-011#2', 'คุณเค', '10 มิ.ย. 2569')
+
+  // ใบแจ้งหนี้ตั้งต้น — ชุดเดียวกับ src/pages/billing/data.ts
+  const insInv = db.prepare(
+    `INSERT INTO invoices (id, code, project, client, phase_no, phase_name, value, stage,
+      waiting_days, billed_on, aging_days, billed_this_month, paid_on, paid_this_month)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+  )
+  insInv.run('AR-2025-011-4', 'AR-2025-011', 'อาคารสำนักงานพระราม 9', 'บจก. พระราม 9 ดีเวลลอปเมนท์',
+    4, 'Construction Doc', 1800000, 'approved', 12, null, 0, 0, null, 0)
+  insInv.run('HS-2025-003-3', 'HS-2025-003', 'บ้านคุณวิภา พัฒนาการ', 'คุณวิภา',
+    3, 'แบบก่อสร้าง + ขออนุญาต', 1200000, 'billed', 0, '28 เม.ย. 69', 98, 0, null, 0)
+  insInv.run('AR-2025-006-2', 'AR-2025-006', 'โรงงานอาหารอยุธยา', 'บจก. อยุธยา ฟู้ดส์',
+    2, 'Schematic', 1400000, 'billed', 0, '20 มิ.ย. 69', 45, 0, null, 0)
+  insInv.run('ID-2025-018-3', 'ID-2025-018', 'โรงแรมล้านนา เชียงใหม่', 'บจก. ล้านนา ฮอสพิทาลิตี้',
+    3, 'Working Drawing + FF&E', 950000, 'billed', 0, '10 ก.ค. 69', 25, 0, null, 0)
+  insInv.run('AR-2025-011-3', 'AR-2025-011', 'อาคารสำนักงานพระราม 9', 'บจก. พระราม 9 ดีเวลลอปเมนท์',
+    3, 'Design Development', 1500000, 'paid', 0, '30 มิ.ย. 69', 0, 0, '2 ส.ค. 69', 1)
+  insInv.run('ID-2026-009-1', 'ID-2026-009', 'สำนักงาน BTS อโศก', 'บจก. อโศก แคปปิตอล',
+    1, 'Concept', 500000, 'paid', 0, '15 ก.ค. 69', 0, 0, '1 ส.ค. 69', 1)
 }

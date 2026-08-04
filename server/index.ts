@@ -255,6 +255,349 @@ app.get('/api/audit', (req, res) => {
   res.json({ entries: rows })
 })
 
+/* ── การจัดสรรรายสัปดาห์ (S6) — แหล่งเดียวของ COL จริง ─── */
+
+const ALLOC_WRITERS: Role[] = ['senior', 'hod', 'hopd']
+
+function validAllocValue(v: unknown): v is number {
+  return typeof v === 'number' && v >= 0 && v <= 1 && Math.abs(v * 4 - Math.round(v * 4)) < 1e-9
+}
+
+app.get('/api/allocations', (req, res) => {
+  const staff = requireAuth(req, res)
+  if (!staff) return
+  const week = Number(req.query.week)
+  if (!Number.isInteger(week)) {
+    res.status(400).json({ error: 'bad_week' })
+    return
+  }
+  const rows = db
+    .prepare('SELECT member, project_code, person_weeks FROM weekly_allocations WHERE week = ?')
+    .all(week) as Array<{ member: string; project_code: string; person_weeks: number }>
+  res.json({
+    week,
+    entries: rows.map((r) => ({ member: r.member, projectCode: r.project_code, personWeeks: r.person_weeks })),
+  })
+})
+
+app.put('/api/allocations', (req, res) => {
+  const staff = requireAuth(req, res)
+  if (!staff) return
+  if (!ALLOC_WRITERS.includes(staff.role)) {
+    forbidden(res, 'การจัดสรรกำลังคนทำได้โดยหัวหน้า Squad ขึ้นไป — จัดสรรได้เฉพาะสมาชิกใน Squad ตน')
+    return
+  }
+  const { week, member, projectCode, personWeeks } = req.body ?? {}
+  if (!Number.isInteger(week) || typeof member !== 'string' || typeof projectCode !== 'string' || !validAllocValue(personWeeks)) {
+    res.status(400).json({ error: 'bad_request', hint: 'personWeeks ต้องเป็นทวีคูณของ 0.25 ในช่วง 0–1' })
+    return
+  }
+  db.prepare(
+    `INSERT INTO weekly_allocations (week, member, project_code, person_weeks) VALUES (?, ?, ?, ?)
+     ON CONFLICT(week, member, project_code) DO UPDATE SET person_weeks = excluded.person_weeks`,
+  ).run(week, member, projectCode, personWeeks)
+  res.json({ ok: true })
+})
+
+app.put('/api/allocations/bulk', (req, res) => {
+  const staff = requireAuth(req, res)
+  if (!staff) return
+  if (!ALLOC_WRITERS.includes(staff.role)) {
+    forbidden(res, 'การจัดสรรกำลังคนทำได้โดยหัวหน้า Squad ขึ้นไป')
+    return
+  }
+  const { week, entries } = req.body ?? {}
+  if (!Number.isInteger(week) || !Array.isArray(entries)) {
+    res.status(400).json({ error: 'bad_request' })
+    return
+  }
+  const up = db.prepare(
+    `INSERT INTO weekly_allocations (week, member, project_code, person_weeks) VALUES (?, ?, ?, ?)
+     ON CONFLICT(week, member, project_code) DO UPDATE SET person_weeks = excluded.person_weeks`,
+  )
+  const tx = db.transaction(() => {
+    for (const e of entries as Array<{ member: string; projectCode: string; personWeeks: number }>) {
+      if (typeof e.member !== 'string' || typeof e.projectCode !== 'string' || !validAllocValue(e.personWeeks)) {
+        throw new Error('bad_entry')
+      }
+      up.run(week, e.member, e.projectCode, e.personWeeks)
+    }
+  })
+  try {
+    tx()
+  } catch {
+    res.status(400).json({ error: 'bad_entry' })
+    return
+  }
+  res.json({ ok: true })
+})
+
+app.post('/api/allocations/confirm', (req, res) => {
+  const staff = requireAuth(req, res)
+  if (!staff) return
+  if (!ALLOC_WRITERS.includes(staff.role)) {
+    forbidden(res, 'การยืนยันรอบสัปดาห์ทำได้โดยหัวหน้า Squad ขึ้นไป')
+    return
+  }
+  const week = Number(req.body?.week)
+  audit(staff, 'allocation.confirm', `week:${week}`)
+  res.json({ ok: true })
+})
+
+/* ── Variation Orders (S8) ────────────────────────────── */
+
+const thaiDate = () =>
+  new Date().toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' })
+
+interface VoRow {
+  id: string
+  project_code: string
+  source: string
+  detail: string
+  person_weeks: number
+  status: string
+  agreed_value: number | null
+  reason: string | null
+  decided_by: string | null
+  decided_date: string | null
+  linked_phase: string | null
+  submitted_by: string
+  submitted_date: string
+}
+
+function voJson(r: VoRow) {
+  return {
+    id: r.id,
+    projectCode: r.project_code,
+    source: r.source,
+    detail: r.detail,
+    personWeeks: r.person_weeks,
+    status: r.status,
+    agreedValue: r.agreed_value ?? undefined,
+    reason: r.reason ?? undefined,
+    decidedBy: r.decided_by ?? undefined,
+    decidedDate: r.decided_date ?? undefined,
+    linkedPhase: r.linked_phase ?? undefined,
+    submittedBy: r.submitted_by,
+    submittedDate: r.submitted_date,
+  }
+}
+
+const VO_VIEWERS: Role[] = ['hopd', 'hod', 'senior', 'bd']
+
+app.get('/api/vos', (req, res) => {
+  const staff = requireAuth(req, res)
+  if (!staff) return
+  if (!VO_VIEWERS.includes(staff.role)) {
+    forbidden(res, 'ข้อมูล VO เปิดให้ HoPD หัวหน้าแผนก หัวหน้า Squad และ BD ตามตารางสิทธิ์')
+    return
+  }
+  const rows = db.prepare('SELECT * FROM variation_orders ORDER BY id DESC').all() as VoRow[]
+  res.json({ vos: rows.map(voJson) })
+})
+
+app.post('/api/vos', (req, res) => {
+  const staff = requireAuth(req, res)
+  if (!staff) return
+  // §5: Senior/BD สร้างได้ (📝) · HoD/HoPD สร้างและอนุมัติได้
+  if (!VO_VIEWERS.includes(staff.role)) {
+    forbidden(res, 'การเปิด VO ทำได้โดย Senior ขึ้นไป หรือ BD')
+    return
+  }
+  const { projectCode, source, detail, personWeeks, linkedPhase } = req.body ?? {}
+  const validPw =
+    typeof personWeeks === 'number' &&
+    personWeeks > 0 &&
+    personWeeks <= 20 &&
+    Math.abs(personWeeks * 4 - Math.round(personWeeks * 4)) < 1e-9
+  if (
+    typeof projectCode !== 'string' ||
+    !['revision_over_quota', 'client_request', 'scope_gap'].includes(source) ||
+    typeof detail !== 'string' ||
+    detail.length === 0 ||
+    !validPw
+  ) {
+    res.status(400).json({ error: 'bad_request' })
+    return
+  }
+  const max = db
+    .prepare("SELECT MAX(CAST(substr(id, 9) AS INTEGER)) AS n FROM variation_orders WHERE id LIKE 'VO-2026-%'")
+    .get() as { n: number | null }
+  const id = `VO-2026-${String((max.n ?? 0) + 1).padStart(3, '0')}`
+  db.prepare(
+    `INSERT INTO variation_orders (id, project_code, source, detail, person_weeks, status, linked_phase, submitted_by, submitted_date)
+     VALUES (?, ?, ?, ?, ?, 'proposed', ?, ?, ?)`,
+  ).run(id, projectCode, source, detail, personWeeks, linkedPhase ?? null, staff.name, thaiDate())
+  const row = db.prepare('SELECT * FROM variation_orders WHERE id = ?').get(id) as VoRow
+  res.json({ vo: voJson(row) })
+})
+
+app.post('/api/vos/:id/decide', (req, res) => {
+  const staff = requireAuth(req, res)
+  if (!staff) return
+  if (staff.role !== 'hod' && staff.role !== 'hopd') {
+    forbidden(res, 'การอนุมัติ VO เป็นของหัวหน้าแผนกขึ้นไป — Senior/BD เสนอได้แต่ตัดสินไม่ได้')
+    return
+  }
+  const { status, reason, agreedValue } = req.body ?? {}
+  if (!['billable', 'goodwill', 'rejected'].includes(status)) {
+    res.status(400).json({ error: 'bad_status' })
+    return
+  }
+  if ((status === 'goodwill' || status === 'rejected') && (typeof reason !== 'string' || reason.length === 0)) {
+    res.status(400).json({ error: 'reason_required', hint: 'การแถม/ปฏิเสธต้องมีเหตุผลกำกับเสมอ' })
+    return
+  }
+  const row = db.prepare('SELECT * FROM variation_orders WHERE id = ?').get(req.params.id) as VoRow | undefined
+  if (!row) {
+    res.status(404).json({ error: 'not_found' })
+    return
+  }
+  db.prepare(
+    `UPDATE variation_orders SET status = ?, agreed_value = ?, reason = ?, decided_by = ?, decided_date = ? WHERE id = ?`,
+  ).run(
+    status,
+    status === 'billable' ? (typeof agreedValue === 'number' ? agreedValue : Math.round(row.person_weeks * 19000)) : null,
+    typeof reason === 'string' && reason.length > 0 ? reason : null,
+    `${staff.name} (${staff.role === 'hopd' ? 'HoPD' : 'HoD'})`,
+    thaiDate(),
+    row.id,
+  )
+  audit(staff, 'vo.decide', row.id, `${row.status} → ${status}${reason ? ` · ${reason}` : ''}`)
+  const updated = db.prepare('SELECT * FROM variation_orders WHERE id = ?').get(row.id) as VoRow
+  res.json({ vo: voJson(updated) })
+})
+
+/* ── Billing (S9) ─────────────────────────────────────── */
+
+interface InvoiceRow {
+  id: string
+  code: string
+  project: string
+  client: string
+  phase_no: number
+  phase_name: string
+  value: number
+  stage: string
+  waiting_days: number
+  billed_on: string | null
+  aging_days: number
+  billed_this_month: number
+  paid_on: string | null
+  paid_this_month: number
+}
+
+function invoiceJson(r: InvoiceRow) {
+  return {
+    id: r.id,
+    code: r.code,
+    project: r.project,
+    client: r.client,
+    phaseNo: r.phase_no,
+    phaseName: r.phase_name,
+    value: r.value,
+    stage: r.stage,
+    waitingDays: r.waiting_days,
+    billedOn: r.billed_on,
+    agingDays: r.aging_days,
+    billedThisMonth: r.billed_this_month === 1,
+    paidOn: r.paid_on,
+    paidThisMonth: r.paid_this_month === 1,
+  }
+}
+
+const BILLING_VIEWERS: Role[] = ['admin', 'hopd', 'hod', 'bd']
+const BILLING_WRITERS: Role[] = ['admin', 'hopd']
+
+app.get('/api/billing', (req, res) => {
+  const staff = requireAuth(req, res)
+  if (!staff) return
+  if (!BILLING_VIEWERS.includes(staff.role)) {
+    forbidden(res, 'ข้อมูลการวางบิลเปิดให้ Admin/บัญชี HoPD HoD และ BD ตามตารางสิทธิ์')
+    return
+  }
+  const rows = db.prepare('SELECT * FROM invoices').all() as InvoiceRow[]
+  res.json({ items: rows.map(invoiceJson) })
+})
+
+function billingTransition(
+  req: express.Request,
+  res: express.Response,
+  from: string,
+  to: string,
+  patch: (id: string) => void,
+  action: string,
+) {
+  const staff = requireAuth(req, res)
+  if (!staff) return
+  if (!BILLING_WRITERS.includes(staff.role)) {
+    forbidden(res, 'การบันทึกวางบิล/รับเงินทำได้โดย Admin/บัญชี หรือ HoPD')
+    return
+  }
+  const row = db.prepare('SELECT * FROM invoices WHERE id = ?').get(req.params.id) as InvoiceRow | undefined
+  if (!row) {
+    res.status(404).json({ error: 'not_found' })
+    return
+  }
+  if (row.stage !== from) {
+    res.status(409).json({ error: 'wrong_stage', hint: `สถานะปัจจุบันคือ ${row.stage} — เดินหน้าทางเดียว ${from} → ${to}` })
+    return
+  }
+  patch(row.id)
+  audit(staff, action, row.id, `${row.code} งวด ${row.phase_no} · ฿${row.value.toLocaleString('en-US')}`)
+  const updated = db.prepare('SELECT * FROM invoices WHERE id = ?').get(row.id) as InvoiceRow
+  res.json({ item: invoiceJson(updated) })
+}
+
+app.post('/api/billing/:id/bill', (req, res) => {
+  billingTransition(req, res, 'approved', 'billed', (id) => {
+    db.prepare(
+      "UPDATE invoices SET stage = 'billed', billed_on = 'วันนี้', aging_days = 0, billed_this_month = 1 WHERE id = ?",
+    ).run(id)
+  }, 'billing.bill')
+})
+
+app.post('/api/billing/:id/receive', (req, res) => {
+  billingTransition(req, res, 'billed', 'paid', (id) => {
+    db.prepare("UPDATE invoices SET stage = 'paid', paid_on = 'วันนี้', paid_this_month = 1 WHERE id = ?").run(id)
+  }, 'billing.receive')
+})
+
+/* ── Handoff (S0) ─────────────────────────────────────── */
+
+app.post('/api/handoff', (req, res) => {
+  const staff = requireAuth(req, res)
+  if (!staff) return
+  if (staff.role !== 'bd' && staff.role !== 'hopd') {
+    forbidden(res, 'การส่ง Handoff เป็นหน้าที่ของ BD/Sales')
+    return
+  }
+  const { client, projectName, line, contractValue, squad, revisionRounds, dueDate, note, promises } = req.body ?? {}
+  if (typeof client !== 'string' || typeof projectName !== 'string' || !Array.isArray(promises) || promises.length === 0) {
+    res.status(400).json({ error: 'bad_request', hint: 'ต้องมี ลูกค้า ชื่อโครงการ และ Promise อย่างน้อย 1 รายการ' })
+    return
+  }
+  const info = db
+    .prepare(
+      `INSERT INTO handoff_briefs (client, project_name, line, contract_value, squad, revision_rounds, due_date, note, promises, submitted_by)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    )
+    .run(
+      client,
+      projectName,
+      typeof line === 'string' ? line : null,
+      typeof contractValue === 'number' ? contractValue : null,
+      typeof squad === 'string' ? squad : null,
+      String(revisionRounds ?? ''),
+      typeof dueDate === 'string' ? dueDate : null,
+      typeof note === 'string' ? note : null,
+      JSON.stringify(promises),
+      staff.name,
+    )
+  audit(staff, 'handoff.submit', `${projectName}`, `ลูกค้า ${client} · promise ${promises.length} รายการ`)
+  res.json({ id: info.lastInsertRowid })
+})
+
 app.get('/api/health', (_req, res) => {
   res.json({ ok: true, service: 'dpm-api' })
 })

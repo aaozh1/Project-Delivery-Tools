@@ -65,7 +65,8 @@ src/
 - [x] ชั้นสิทธิ์ตามตาราง §5: `src/auth/` + route guard + ตัวสลับบทบาท 6 บทบาท + หน้าแรกตามบทบาท
 - [x] ทะเบียนโครงการกลาง `src/data/projects.ts` ใช้ร่วมกันข้ามหน้า
 - [x] Backend: Express + SQLite (`server/`) — session ต่อบทบาท · enforce สิทธิ์ฝั่ง server (ตัดข้อมูลเงินของ Designer, ขอบเขต BD, 403 พร้อมเหตุผล+ผู้ติดต่อ) · Business Rules อ่าน/เขียนผ่าน API · เรตค่าแรง reveal ทีละแถว + Audit Log จริง · เมนู Audit Log ใน S11
-- [ ] ขยาย API ให้ครอบหน้าที่เหลือ (จัดสรรคน, VO, billing, weekly log ฯลฯ — ตอนนี้หน้าเหล่านั้นยังใช้ mock ฝั่ง client ตามแบบแผน `useProjects`/`tryApi` ที่วางไว้)
+- [x] Flow ที่เขียนข้อมูลทั้งหมดผ่าน API แล้ว: จัดสรรคน S6 (PUT ทีละช่อง + คัดลอกสัปดาห์ก่อน + ยืนยันรอบ→audit) · VO S8 (เสนอ/ตัดสิน — แถม/ปฏิเสธบังคับเหตุผล, ตัดสินได้เฉพาะ HoD/HoPD→audit) · Billing S9 (วางบิล/รับเงิน เดินหน้าทางเดียว 409 เมื่อผิดสถานะ→audit) · Handoff S0 (บันทึก HandoffBrief→audit)
+- [ ] หน้าอ่านอย่างเดียวที่เหลือ (S1 S2 S7 S10 S12 S13 S14) ยังใช้ mock — ต้องการ derived data (WorkloadSnapshot, GrowthProfile ฯลฯ) ตามภาคผนวก C ก่อน
 - [ ] Auth จริง (SSO/รหัสผ่าน) แทน dev-login ต่อบทบาท · ย้าย SQLite → PostgreSQL เมื่อขึ้น production
 
 สเปกละเอียดของหน้า P0 อยู่ใน `docs/design-handoff/README.md` + prototype `.dc.html` · หน้า P1/P2 ที่ไม่มี prototype ออกแบบตาม design system + brief
