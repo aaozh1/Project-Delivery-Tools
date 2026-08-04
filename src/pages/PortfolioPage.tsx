@@ -1,4 +1,5 @@
 import { useState, type CSSProperties } from 'react'
+import { Link } from 'react-router-dom'
 import { Button, StatusMark } from '../components'
 import { STATUS, type RiskLevel } from '../lib/status'
 import { bahtAbbrev, percent } from '../lib/format'
@@ -6,14 +7,15 @@ import {
   FILTERS,
   MAX_DELAY_DAYS,
   PROJECTS,
+  SQUAD_META,
   TOTAL_PROJECTS,
   type FilterKey,
   type MarginMode,
   type ProjectRow,
 } from './portfolio/data'
 
-/** grid คงที่ของตารางโครงการตามสเปก S1 — ใช้ค่าเดียวกันทั้งหัวและแถว */
-const TABLE_GRID = '76px 108px minmax(150px,1fr) 62px 52px 176px 148px 96px 104px'
+/** ลำดับความรุนแรงใช้เรียงแถวในแต่ละ window และเรียง window */
+const RISK_ORDER: Record<RiskLevel, number> = { critical: 0, warn: 1, ok: 2, low: 3 }
 
 /* ───────────────────────── แถบ KPI 5 ช่อง ───────────────────────── */
 
@@ -442,59 +444,123 @@ function DelaySplitBar({ usDelay, clDelay }: { usDelay: number; clDelay: number 
   )
 }
 
-function ProjectTableRow({ row, marginMode }: { row: ProjectRow; marginMode: MarginMode }) {
-  const status = STATUS[row.status]
-  const gap = row.used - row.progress
-  const usedColor =
-    row.used > 110 ? 'var(--dpm-red)' : gap > 12 ? 'var(--dpm-yellow)' : 'var(--dpm-sub)'
+/** แถวโครงการแบบกะทัดรัดใน window ของ Squad — คลิกไปหน้ารายละเอียดโครงการ */
+function SquadWindowRow({ row, marginMode }: { row: ProjectRow; marginMode: MarginMode }) {
   const m = marginMode === 'forecast' ? row.marginFc : row.marginNow
   const marginColor = m < 0 ? 'var(--dpm-red)' : m < 20 ? 'var(--dpm-yellow)' : 'var(--dpm-ink)'
 
   return (
-    <div
+    <Link
+      to="/project"
       className="dpm-table-row"
-      style={{
-        display: 'grid',
-        gridTemplateColumns: TABLE_GRID,
-        alignItems: 'center',
-        gap: 12,
-        padding: '14px 20px',
-        cursor: 'pointer',
-      }}
+      style={{ display: 'block', padding: '10px 14px', color: 'inherit' }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-        <StatusMark level={row.status} size={10} />
-        <span style={{ fontSize: 11, fontWeight: 600, color: status.color }}>{status.label}</span>
-      </div>
-      <div className="dpm-mono" style={{ fontSize: 12 }}>
-        {row.code}
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, minWidth: 0 }}>
+        <StatusMark level={row.status} size={9} />
+        <span className="dpm-mono" style={{ fontSize: 11, color: 'var(--dpm-sub)' }}>
+          {row.code}
+        </span>
+        <span
+          style={{
+            fontSize: 13,
+            fontWeight: 600,
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            minWidth: 0,
+            flex: 1,
+          }}
+        >
+          {row.name}
+        </span>
+        <span style={{ fontSize: 11, color: 'var(--dpm-mute)', whiteSpace: 'nowrap' }}>
+          งวด {row.phase}
+        </span>
+        <span style={{ fontSize: 15, fontWeight: 600, color: marginColor, whiteSpace: 'nowrap' }}>
+          {percent(m)}
+        </span>
       </div>
       <div
         style={{
-          fontSize: 14,
-          fontWeight: 500,
-          whiteSpace: 'nowrap',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
+          display: 'grid',
+          gridTemplateColumns: 'minmax(0,1fr) 132px',
+          gap: 14,
+          alignItems: 'start',
+          marginTop: 7,
         }}
       >
-        {row.name}
-      </div>
-      <div style={{ fontSize: 13, color: 'var(--dpm-sub)' }}>{row.squad}</div>
-      <div style={{ fontSize: 13, color: 'var(--dpm-sub)' }}>{row.phase}</div>
-
-      <RowDualBar progress={row.progress} used={row.used} />
-
-      <DelaySplitBar usDelay={row.usDelay} clDelay={row.clDelay} />
-
-      <div style={{ textAlign: 'right', fontSize: 14, fontWeight: 500, color: usedColor }}>
-        {row.used}%
-      </div>
-      <div style={{ textAlign: 'right' }}>
-        <div style={{ fontSize: 16, fontWeight: 600, color: marginColor }}>{percent(m)}</div>
-        <div style={{ fontSize: 10, color: 'var(--dpm-mute)', marginTop: 1 }}>
-          {marginMode === 'forecast' ? 'พยากรณ์ตอนจบ' : 'ณ ปัจจุบัน'}
+        <RowDualBar progress={row.progress} used={row.used} />
+        <div>
+          <DelaySplitBar usDelay={row.usDelay} clDelay={row.clDelay} />
+          <div style={{ marginTop: 4, fontSize: 10, color: 'var(--dpm-mute)', textAlign: 'center' }}>
+            ช้า · เรา / ลูกค้า
+          </div>
         </div>
+      </div>
+    </Link>
+  )
+}
+
+/** window ย่อยของหนึ่ง Squad — เรียงกันตามแนวนอน เห็นทุก Squad พร้อมกัน */
+function SquadWindow({
+  squad,
+  rows,
+  marginMode,
+}: {
+  squad: string
+  rows: ProjectRow[]
+  marginMode: MarginMode
+}) {
+  const meta = SQUAD_META[squad]
+  const worst = rows.reduce<RiskLevel>(
+    (acc, r) => (RISK_ORDER[r.status] < RISK_ORDER[acc] ? r.status : acc),
+    'ok',
+  )
+  const criticalCount = rows.filter((r) => r.status === 'critical').length
+  const warnCount = rows.filter((r) => r.status === 'warn').length
+  const summary =
+    criticalCount > 0
+      ? `วิกฤต ${criticalCount}`
+      : warnCount > 0
+        ? `เตือน ${warnCount}`
+        : 'ปกติทั้งหมด'
+
+  return (
+    <div className="dpm-card" style={{ display: 'flex', flexDirection: 'column' }}>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'baseline',
+          gap: 8,
+          padding: '10px 14px',
+          borderBottom: '1px solid var(--dpm-border)',
+          background: 'var(--dpm-subtle)',
+        }}
+      >
+        <span style={{ fontSize: 14, fontWeight: 600 }}>Squad {squad}</span>
+        <span style={{ fontSize: 11, color: 'var(--dpm-sub)' }}>
+          {meta ? `${meta.lead} · ${meta.dept}` : ''}
+        </span>
+        <span style={{ flex: 1 }} />
+        <span style={{ fontSize: 11, color: 'var(--dpm-mute)' }}>{rows.length} โครงการ</span>
+        <span
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 5,
+            fontSize: 11,
+            fontWeight: 600,
+            color: STATUS[worst].color,
+          }}
+        >
+          <StatusMark level={worst} size={8} />
+          {summary}
+        </span>
+      </div>
+      <div>
+        {rows.map((row) => (
+          <SquadWindowRow key={row.code} row={row} marginMode={marginMode} />
+        ))}
       </div>
     </div>
   )
@@ -563,6 +629,23 @@ export function PortfolioPage() {
 
   const rows = PROJECTS.filter((p) => filter === 'all' || p.dept === filter)
 
+  /* จัดกลุ่มตาม Squad — window เรียงตามความเสี่ยงหนักสุดก่อน (Exception first) */
+  const squads = [...new Set(rows.map((r) => r.squad))]
+  const grouped = squads
+    .map((squad) => {
+      const squadRows = rows
+        .filter((r) => r.squad === squad)
+        .sort((a, b) => RISK_ORDER[a.status] - RISK_ORDER[b.status])
+      const worst = squadRows.reduce<RiskLevel>(
+        (acc, r) => (RISK_ORDER[r.status] < RISK_ORDER[acc] ? r.status : acc),
+        'ok',
+      )
+      return { squad, squadRows, worst }
+    })
+    .sort(
+      (a, b) => RISK_ORDER[a.worst] - RISK_ORDER[b.worst] || a.squad.localeCompare(b.squad),
+    )
+
   return (
     <div
       style={{
@@ -595,9 +678,7 @@ export function PortfolioPage() {
 
       <KpiStrip />
 
-      <DecisionBox />
-
-      {/* แถบกรอง + เรียง/ส่งออก */}
+      {/* ── สถานะโครงการแยกตาม Squad — window ย่อยเรียงแนวนอน (ขึ้นก่อนกล่องตัดสินใจ) ── */}
       <div
         style={{
           display: 'flex',
@@ -631,106 +712,85 @@ export function PortfolioPage() {
             )
           })}
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          <span style={{ fontSize: 12, color: 'var(--dpm-sub)' }}>
-            เรียงตาม <b style={{ color: 'var(--dpm-ink)' }}>ความเสี่ยง</b> ▾
-          </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          <span style={{ fontSize: 12, color: 'var(--dpm-sub)' }}>Margin</span>
+          <MarginToggle marginMode={marginMode} onChange={setMarginMode} />
           <Button variant="secondary">ส่งออก CSV</Button>
         </div>
       </div>
 
-      {/* ตารางโครงการ */}
-      <div className="dpm-card">
+      {grouped.length > 0 ? (
         <div
-          className="dpm-table-head"
           style={{
             display: 'grid',
-            gridTemplateColumns: TABLE_GRID,
-            alignItems: 'end',
-            gap: 12,
-            padding: '10px 20px 8px',
-            fontSize: 11,
+            gridTemplateColumns: 'repeat(auto-fill, minmax(430px, 1fr))',
+            gap: 16,
+            alignItems: 'start',
           }}
         >
-          <div>สถานะ</div>
-          <div>รหัส</div>
-          <div>ชื่อโครงการ</div>
-          <div>Squad</div>
-          <div>งวด</div>
-          <div>ความคืบหน้า เทียบ ใช้คน-สัปดาห์</div>
-          <div>ช้า · เรา / ลูกค้า</div>
-          <div style={{ textAlign: 'right' }}>ใช้ไป</div>
-          <div style={{ textAlign: 'right' }}>
-            <div style={{ marginBottom: 3 }}>Margin</div>
-            <MarginToggle marginMode={marginMode} onChange={setMarginMode} />
-          </div>
+          {grouped.map(({ squad, squadRows }) => (
+            <SquadWindow key={squad} squad={squad} rows={squadRows} marginMode={marginMode} />
+          ))}
         </div>
-
-        {rows.map((row) => (
-          <ProjectTableRow key={row.code} row={row} marginMode={marginMode} />
-        ))}
-
-        {rows.length === 0 && (
-          <div
+      ) : (
+        <div className="dpm-card" style={{ padding: '24px 20px', fontSize: 13, color: 'var(--dpm-mute)' }}>
+          ไม่มีโครงการในสายงานนี้ ·{' '}
+          <button
+            type="button"
+            onClick={() => setFilter('all')}
             style={{
-              padding: '24px 20px',
+              border: 'none',
+              background: 'transparent',
+              padding: 0,
+              fontFamily: 'inherit',
               fontSize: 13,
-              color: 'var(--dpm-mute)',
-              borderBottom: '1px solid var(--dpm-border)',
+              color: 'var(--dpm-accent)',
+              cursor: 'pointer',
             }}
           >
-            ไม่มีโครงการในสายงานนี้ ·{' '}
-            <button
-              type="button"
-              onClick={() => setFilter('all')}
-              style={{
-                border: 'none',
-                background: 'transparent',
-                padding: 0,
-                fontFamily: 'inherit',
-                fontSize: 13,
-                color: 'var(--dpm-accent)',
-                cursor: 'pointer',
-              }}
-            >
-              ดูทั้งหมด
-            </button>
-          </div>
-        )}
-
-        {/* ท้ายตาราง + legend */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: '12px 20px',
-            fontSize: 12,
-            color: 'var(--dpm-mute)',
-          }}
-        >
-          <span>
-            แสดง {rows.length} จาก {TOTAL_PROJECTS} โครงการ · เรียงตามความเสี่ยงสูงสุดก่อน
-          </span>
-          <span style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-              <LegendSwatch color="var(--dpm-ink)" wide />
-              ความคืบหน้างาน
-            </span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-              <LegendSwatch color="var(--dpm-mute)" wide />
-              คน-สัปดาห์ที่ใช้
-            </span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-              <LegendSwatch color="var(--dpm-ink)" />
-              เส้นอ้างอิง = ความคืบหน้า
-            </span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-              <LegendSwatch color="var(--dpm-blue)" wide />
-              ความล่าช้าฝั่งลูกค้า
-            </span>
-          </span>
+            ดูทั้งหมด
+          </button>
         </div>
+      )}
+
+      {/* legend ใต้ windows */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '12px 4px 0',
+          fontSize: 12,
+          color: 'var(--dpm-mute)',
+        }}
+      >
+        <span>
+          แสดง {rows.length} จาก {TOTAL_PROJECTS} โครงการ · {grouped.length} Squad ·
+          เรียง window ตาม Squad ที่เสี่ยงสุดก่อน
+        </span>
+        <span style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+            <LegendSwatch color="var(--dpm-ink)" wide />
+            ความคืบหน้างาน
+          </span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+            <LegendSwatch color="var(--dpm-mute)" wide />
+            คน-สัปดาห์ที่ใช้
+          </span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+            <LegendSwatch color="var(--dpm-ink)" />
+            เส้นอ้างอิง = ความคืบหน้า
+          </span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+            <LegendSwatch color="var(--dpm-blue)" wide />
+            ความล่าช้าฝั่งลูกค้า
+          </span>
+        </span>
+      </div>
+
+      {/* กล่องต้องตัดสินใจ — ย้ายลงมาใต้สถานะโครงการตาม feedback */}
+      <div style={{ marginTop: 24 }}>
+        <DecisionBox />
       </div>
     </div>
   )
