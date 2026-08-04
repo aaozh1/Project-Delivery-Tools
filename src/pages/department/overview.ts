@@ -1,8 +1,8 @@
 /**
  * ข้อมูลภาพรวมแผนกชุดใหม่ตาม feedback ผู้ใช้ — S2 Department Board
  * Stage การทำงาน 11 ขั้น: Potential/PP/CD/SD/DD/PM/EIA/TD/CR/CP/Done
- * ⚠️ ชื่อเต็มภาษาไทยของแต่ละ stage เป็นค่าตั้งต้นที่เดาไว้ — ต้องยืนยันกับทีมจริง
- *    และย้ายเข้า Admin Console (ตั้งค่าได้) เมื่อมี data layer จริง
+ * ชื่อเต็มยืนยันโดยผู้ใช้แล้ว (4 ส.ค. 2569) — ย้ายเข้า Admin Console (ตั้งค่าได้)
+ * เมื่อมี data layer จริง
  */
 
 export const STAGES = [
@@ -21,18 +21,18 @@ export const STAGES = [
 
 export type Stage = (typeof STAGES)[number]
 
-/** ชื่อเต็มตั้งต้น (รอยืนยัน) — แสดงเป็น tooltip/legend */
+/** ชื่อเต็มของแต่ละ stage — แสดงเป็น tooltip/legend */
 export const STAGE_LABELS: Record<Stage, string> = {
   Potential: 'โอกาสงาน ยังไม่เซ็นสัญญา',
-  PP: 'Pre-Proposal / ข้อเสนอโครงการ',
+  PP: 'Programing & Proposal',
   CD: 'Conceptual Design',
   SD: 'Schematic Design',
   DD: 'Design Development',
-  PM: 'Permit / ยื่นขออนุญาต',
-  EIA: 'รายงานผลกระทบสิ่งแวดล้อม',
+  PM: 'Permission Drawing Package',
+  EIA: 'รายงานผลกระทบสิ่งแวดล้อม (EIA)',
   TD: 'Tender Document',
-  CR: 'Construction Review / ตรวจงานก่อสร้าง',
-  CP: 'Construction Phase / ช่วงก่อสร้าง',
+  CR: 'Construction Reference Drawing Package',
+  CP: 'Construction Process',
   Done: 'ปิดโครงการ',
 }
 

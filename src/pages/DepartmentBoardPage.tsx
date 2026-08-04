@@ -159,7 +159,7 @@ function StageStrip() {
     <div className="dpm-card">
       <div className="dpm-card__header">
         <span className="dpm-card__title">โครงการ Active ตาม Stage</span>
-        <span className="dpm-card__hint">เดือน ส.ค. 2569 · ชี้ที่รหัสเพื่อดูชื่อเต็ม (ชื่อเต็มรอยืนยัน — ตั้งค่าได้ใน Admin)</span>
+        <span className="dpm-card__hint">เดือน ส.ค. 2569 · ชี้ที่รหัสเพื่อดูชื่อเต็ม</span>
       </div>
       <div
         style={{
