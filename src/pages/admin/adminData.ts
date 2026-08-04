@@ -5,7 +5,7 @@
  * ยังไม่มี data layer — ค่าคงที่ในไฟล์นี้จะถูกแทนด้วยการอ่าน/เขียนจริงภายหลัง
  */
 
-export type AdminView = 'rules' | 'rates'
+export type AdminView = 'rules' | 'rates' | 'audit'
 
 export interface AdminMenuItem {
   key: string
@@ -26,7 +26,7 @@ export const ADMIN_MENU: AdminMenuItem[] = [
   { key: 'overhead', label: 'ต้นทุนส่วนกลาง' },
   { key: 'calendar', label: 'ปฏิทิน / วันหยุด' },
   { key: 'notify', label: 'การแจ้งเตือน' },
-  { key: 'audit', label: 'Audit Log' },
+  { key: 'audit', label: 'Audit Log', view: 'audit' },
 ]
 
 export const RULE_DEFAULTS = {

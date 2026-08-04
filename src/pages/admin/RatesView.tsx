@@ -1,15 +1,82 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { RATE_ROWS } from './adminData'
 import { TextButton } from './TextButton'
+import { tryApi } from '../../api/client'
+import { baht } from '../../lib/format'
+
+interface RateRowState {
+  position: string
+  headcount: number
+  updated: string
+  /** ตัวเลขจริง — มีค่าเมื่อเปิดดูแล้วเท่านั้น (server ส่งให้ทีละแถวผ่าน /reveal) */
+  real: string | null
+}
+
+interface RatesResponse {
+  rates: Array<{ position: string; headcount: number; updated: string }>
+}
+
+interface RevealResponse {
+  position: string
+  costRatePerWeek: number
+  revealsToday: number
+}
 
 /**
  * หน้า "อัตราค่าแรง" — จำกัดสิทธิ์ HoPD
- * ค่าเป็น •••••• เป็นค่าตั้งต้น เปิดดูทีละแถว การเปิดดูทุกครั้งถูกบันทึกลง Audit Log
- * state อยู่ในคอมโพเนนต์นี้ — ออกจากหน้า (unmount) แล้วทุกแถวปิดอัตโนมัติตามสเปก
+ * โหมด server: รายการมาโดยไม่มีตัวเลข การเปิดดูขอทีละแถวผ่าน API ซึ่งเขียน Audit Log
+ * ฝั่งเซิร์ฟเวอร์จริง · โหมด offline: fallback ค่า mock ฝั่ง client
+ * state อยู่ในคอมโพเนนต์ — ออกจากหน้า (unmount) แล้วทุกแถวปิดอัตโนมัติตามสเปก
  */
 export function RatesView() {
-  const [revealed, setRevealed] = useState<Record<number, boolean>>({})
+  const [rows, setRows] = useState<RateRowState[]>(() =>
+    RATE_ROWS.map((r) => ({ position: r.role, headcount: r.headcount, updated: r.updated, real: null })),
+  )
+  const [source, setSource] = useState<'server' | 'mock'>('mock')
+  const [revealed, setRevealed] = useState<Record<string, boolean>>({})
   const [revealCount, setRevealCount] = useState(0)
+
+  useEffect(() => {
+    let cancelled = false
+    void (async () => {
+      const res = await tryApi<RatesResponse>('/api/rates')
+      if (cancelled || !res) return
+      setRows(res.rates.map((r) => ({ ...r, real: null })))
+      setSource('server')
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  const toggle = async (row: RateRowState) => {
+    const open = revealed[row.position] === true
+    if (open) {
+      setRevealed((r) => ({ ...r, [row.position]: false }))
+      return
+    }
+    if (source === 'server') {
+      const res = await tryApi<RevealResponse>('/api/rates/reveal', {
+        method: 'POST',
+        body: JSON.stringify({ position: row.position }),
+      })
+      if (res) {
+        setRows((rs) =>
+          rs.map((r) => (r.position === row.position ? { ...r, real: baht(res.costRatePerWeek) } : r)),
+        )
+        setRevealCount(res.revealsToday)
+        setRevealed((r) => ({ ...r, [row.position]: true }))
+        return
+      }
+    }
+    // offline fallback — ตัวเลข mock ฝั่ง client (ไม่มี audit จริง)
+    const mock = RATE_ROWS.find((r) => r.role === row.position)
+    setRows((rs) =>
+      rs.map((r) => (r.position === row.position ? { ...r, real: mock?.real ?? '—' } : r)),
+    )
+    setRevealCount((c) => c + 1)
+    setRevealed((r) => ({ ...r, [row.position]: true }))
+  }
 
   return (
     <div style={{ flex: 1, padding: '24px 32px 60px', maxWidth: 1120 }}>
@@ -51,7 +118,9 @@ export function RatesView() {
           <b style={{ color: 'var(--dpm-ink)' }}>การกดเปิดดูทุกครั้งจะถูกบันทึกลง Audit Log</b>{' '}
           พร้อมชื่อคุณ วันเวลา และแถวที่เปิด
           <div style={{ marginTop: 3, fontSize: 11, color: 'var(--dpm-mute)' }}>
-            รอบนี้คุณเปิดดูไปแล้ว {revealCount} ครั้ง
+            {source === 'server'
+              ? `วันนี้คุณเปิดดูไปแล้ว ${revealCount} ครั้ง (นับโดยเซิร์ฟเวอร์ · ดูรายการได้ในเมนู Audit Log)`
+              : `รอบนี้คุณเปิดดูไปแล้ว ${revealCount} ครั้ง (โหมดไม่มีเซิร์ฟเวอร์ — audit จริงจะเริ่มเมื่อรัน npm run server)`}
           </div>
         </div>
       </div>
@@ -72,11 +141,11 @@ export function RatesView() {
           <span>มีผลตั้งแต่</span>
           <span />
         </div>
-        {RATE_ROWS.map((row, i) => {
-          const open = revealed[i] === true
+        {rows.map((row) => {
+          const open = revealed[row.position] === true
           return (
             <div
-              key={row.role}
+              key={row.position}
               style={{
                 display: 'grid',
                 gridTemplateColumns: '180px 150px repeat(2, minmax(0,1fr)) 120px',
@@ -88,27 +157,24 @@ export function RatesView() {
                 transition: 'background 150ms ease',
               }}
             >
-              <span style={{ fontSize: 14, fontWeight: 500 }}>{row.role}</span>
+              <span style={{ fontSize: 14, fontWeight: 500 }}>{row.position}</span>
               <span style={{ fontSize: 13, color: 'var(--dpm-sub)' }}>{row.headcount} คน</span>
               <span
                 style={{
-                  fontSize: open ? 15 : 15,
+                  fontSize: 15,
                   fontWeight: 600,
                   color: open ? 'var(--dpm-ink)' : 'var(--dpm-mute)',
                   letterSpacing: open ? undefined : '0.08em',
                 }}
               >
-                {open ? row.real : '••••••'}
+                {open && row.real !== null ? row.real : '••••••'}
               </span>
               <span style={{ fontSize: 12, color: 'var(--dpm-mute)' }}>{row.updated}</span>
               <button
                 type="button"
                 className="dpm-btn dpm-btn--secondary"
                 style={{ height: 28, fontSize: 11, padding: '0 12px', justifySelf: 'end' }}
-                onClick={() => {
-                  if (!open) setRevealCount((c) => c + 1)
-                  setRevealed((r) => ({ ...r, [i]: !open }))
-                }}
+                onClick={() => void toggle(row)}
               >
                 {open ? 'ปิด' : 'เปิดดู'}
               </button>

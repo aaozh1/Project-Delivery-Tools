@@ -14,7 +14,8 @@ import {
 } from '../components'
 import { healthLevel, type PhaseStatus, type RiskLevel } from '../lib/status'
 import { baht, bahtAbbrev, percent, personWeeks } from '../lib/format'
-import { PROJECTS, SERVICE_LINE_LABELS, type Project, type ProjectPhase } from '../data/projects'
+import { SERVICE_LINE_LABELS, type Project, type ProjectPhase } from '../data/projects'
+import { useProjects } from '../api/hooks'
 import { useRole } from '../auth/RoleContext'
 import { canSeeMoney, ROLE_LABELS } from '../auth/roles'
 
@@ -183,15 +184,17 @@ function RestrictedMoney({ size = 13 }: { size?: number }) {
 
 /** ตัวเลือกโครงการ — ชิปสลับดูโครงการอื่นจากทะเบียนกลาง */
 function ProjectPicker({
+  projects,
   selected,
   onSelect,
 }: {
+  projects: Project[]
   selected: string
   onSelect: (code: string) => void
 }) {
   return (
     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, padding: '14px 0 0' }}>
-      {PROJECTS.map((p) => {
+      {projects.map((p) => {
         const isSelected = p.code === selected
         return (
           <button
@@ -718,8 +721,10 @@ function TeamCard({ project }: { project: Project }) {
 export function ProjectDetailPage() {
   const { role } = useRole()
   const moneyVisible = canSeeMoney(role)
+  const { projects } = useProjects()
   const [selectedCode, setSelectedCode] = useState('ID-2026-004')
-  const project = PROJECTS.find((p) => p.code === selectedCode) ?? PROJECTS[0]
+  const project = projects.find((p) => p.code === selectedCode) ?? projects[0]
+  if (!project) return null
   const health = healthLevel(project.usedPct, project.progressPct)
 
   return (
@@ -771,7 +776,7 @@ export function ProjectDetailPage() {
         </div>
 
         {/* ตัวเลือกโครงการ */}
-        <ProjectPicker selected={project.code} onSelect={setSelectedCode} />
+        <ProjectPicker projects={projects} selected={project.code} onSelect={setSelectedCode} />
       </div>
 
       <div style={{ paddingTop: 20, display: 'flex', flexDirection: 'column', gap: 20 }}>

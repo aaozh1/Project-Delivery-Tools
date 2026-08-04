@@ -13,9 +13,18 @@ DPM (Design Project Manager) — ระบบควบคุมโครงก�
 ## คำสั่ง
 
 ```bash
-npm run dev      # dev server
-npm run build    # tsc -b && vite build — ต้องผ่านก่อน commit
+npm run dev:full   # API + หน้าเว็บพร้อมกัน (โหมดปกติ)
+npm run dev        # หน้าเว็บอย่างเดียว — ทุกหน้า fallback เป็น mock ได้
+npm run server     # API อย่างเดียว (Express + SQLite · server/dpm.sqlite สร้าง+seed อัตโนมัติ)
+npm run build      # tsc -b && vite build — type-check ทั้ง app และ server ต้องผ่านก่อน commit
 ```
+
+## Backend (`server/`)
+
+- `server/db.ts` schema + seed (ข้อมูลชุดเดียวกับ `src/data/projects.ts`) · `server/index.ts` API ทั้งหมด
+- **สิทธิ์ enforce ที่นี่เป็นหลัก** ตามตาราง §5: Designer ได้ payload ที่เงินเป็น null · BD ถูกกรองโครงการ · endpoint หวงห้ามตอบ 403 พร้อม `reason`+`contact` (client แสดงเป็น NoAccess ไม่ใช่ error แดง) · การเปิดดูเรต/แก้กฎเขียน `audit_log`
+- ฝั่ง client เรียกผ่าน `src/api/client.ts` (`tryApi` — คืน null เมื่อไม่มีเซิร์ฟเวอร์ ให้ fallback mock เสมอ) · แบบแผนการ wire หน้าดูได้จาก `useProjects` (src/api/hooks.ts), `RatesView`, `AdminConsolePage`
+- endpoint ใหม่ต้อง: ตรวจ session → ตรวจบทบาท → กรอง/ตัดข้อมูลตามขอบเขต → เขียน audit เมื่อเป็นการกระทำอ่อนไหว
 
 ## แนวทางโค้ด
 

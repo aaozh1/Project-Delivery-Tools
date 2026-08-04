@@ -10,11 +10,20 @@
 
 ```bash
 npm install
-npm run dev      # เปิด dev server
-npm run build    # type-check + build production
+npm run dev:full   # API (พอร์ต 3001) + หน้าเว็บ พร้อมกัน — โหมดปกติ
+npm run dev        # หน้าเว็บอย่างเดียว (ไม่มีเซิร์ฟเวอร์ → fallback เป็น mock ฝั่ง client)
+npm run server     # API อย่างเดียว
+npm run build      # type-check (app + server) + build production
 ```
 
-Stack: Vite · React 18 · TypeScript · React Router · ฟอนต์ IBM Plex Sans Thai / IBM Plex Mono (self-host ผ่าน Fontsource)
+Stack: Vite · React 18 · TypeScript · React Router · Express + SQLite (better-sqlite3) · ฟอนต์ IBM Plex Sans Thai / IBM Plex Mono (self-host ผ่าน Fontsource)
+
+**Backend (`server/`)**: API + SQLite (สร้าง+seed อัตโนมัติที่ `server/dpm.sqlite` ตอนสตาร์ท) —
+ที่ enforce ตารางสิทธิ์ §5 ของจริง: dev-login เป็น session cookie ต่อบทบาท ·
+Designer ได้ payload โครงการที่ตัวเลขเงินถูกตัดออกฝั่งเซิร์ฟเวอร์ · BD เห็นเฉพาะโครงการลูกค้าตน ·
+Business Rules แก้ได้เฉพาะ HoPD · เรตค่าแรงเปิดดูได้เฉพาะ HoPD ทีละแถวและทุกครั้งเขียน Audit Log ·
+เมนู Audit Log ใน Admin Console อ่านบันทึกจริงจากเซิร์ฟเวอร์
+หน้าเว็บทำงานได้แม้ไม่มีเซิร์ฟเวอร์ (fallback เป็น mock — มีป้ายบอกโหมด)
 
 ## โครงสร้าง
 
@@ -55,8 +64,9 @@ src/
 - [x] S8 VO & Revision Log (`/vo`) · S9 Billing & Cash (`/finance`) · S10 Closeout Report (`/closeout`) · S12 BD Portal (`/bd`)
 - [x] ชั้นสิทธิ์ตามตาราง §5: `src/auth/` + route guard + ตัวสลับบทบาท 6 บทบาท + หน้าแรกตามบทบาท
 - [x] ทะเบียนโครงการกลาง `src/data/projects.ts` ใช้ร่วมกันข้ามหน้า
-- [ ] Backend จริง: API + DB + auth — สิทธิ์ปัจจุบันคุมเฉพาะฝั่ง client เมื่อมี server ต้อง enforce ซ้ำทุก request (โดยเฉพาะ `cost_rate` และกติกา Squad)
-- [ ] แทน mock (`src/pages/*/data.ts`) ด้วย data layer จริง · เกณฑ์ธุรกิจอ่านจาก S11 แทน constant
+- [x] Backend: Express + SQLite (`server/`) — session ต่อบทบาท · enforce สิทธิ์ฝั่ง server (ตัดข้อมูลเงินของ Designer, ขอบเขต BD, 403 พร้อมเหตุผล+ผู้ติดต่อ) · Business Rules อ่าน/เขียนผ่าน API · เรตค่าแรง reveal ทีละแถว + Audit Log จริง · เมนู Audit Log ใน S11
+- [ ] ขยาย API ให้ครอบหน้าที่เหลือ (จัดสรรคน, VO, billing, weekly log ฯลฯ — ตอนนี้หน้าเหล่านั้นยังใช้ mock ฝั่ง client ตามแบบแผน `useProjects`/`tryApi` ที่วางไว้)
+- [ ] Auth จริง (SSO/รหัสผ่าน) แทน dev-login ต่อบทบาท · ย้าย SQLite → PostgreSQL เมื่อขึ้น production
 
 สเปกละเอียดของหน้า P0 อยู่ใน `docs/design-handoff/README.md` + prototype `.dc.html` · หน้า P1/P2 ที่ไม่มี prototype ออกแบบตาม design system + brief
 

@@ -13,8 +13,10 @@ const STORAGE_KEY = 'dpm.role'
 const VALID: Role[] = ['hopd', 'hod', 'senior', 'designer', 'bd', 'admin']
 
 /**
- * บทบาทปัจจุบันของผู้ใช้ — ยังไม่มีระบบ auth จริง จึงเป็นตัวสลับสำหรับทดลองมุมมอง
- * เมื่อมี backend: ค่านี้ต้องมาจาก session จริง และ server ต้องตรวจสิทธิ์ซ้ำทุก request
+ * บทบาทปัจจุบันของผู้ใช้ — ตัวสลับสำหรับทดลองมุมมอง (แทนหน้า login ระหว่างพัฒนา)
+ * ทุกครั้งที่บทบาทเปลี่ยน จะ login ต่อ API เพื่อให้ session ฝั่ง server ตรงกัน —
+ * server คือผู้ตัดสินสิทธิ์จริง (ตัดข้อมูลเงิน/ปฏิเสธ endpoint ตามตาราง §5)
+ * ไม่มีเซิร์ฟเวอร์ = ใช้ได้ต่อแบบ mock ฝั่ง client
  */
 export function RoleProvider({ children }: { children: ReactNode }) {
   const [role, setRoleState] = useState<Role>(() => {
@@ -24,6 +26,13 @@ export function RoleProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, role)
+    // sync session ฝั่ง server (fire-and-forget — offline ก็ทำงานต่อได้)
+    void fetch('/api/auth/login', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ role }),
+    }).catch(() => undefined)
   }, [role])
 
   return (
